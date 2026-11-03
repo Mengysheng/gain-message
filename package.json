@@ -1,0 +1,35 @@
+{
+  "name": "notice-radar",
+  "version": "1.0.0",
+  "description": "按关键词监控学校官网/公告栏的新通告，命中后邮件汇总推送",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "notice-radar": "src/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test",
+    "inspect": "node src/cli.js inspect",
+    "check": "node src/cli.js test",
+    "run": "node src/cli.js run",
+    "dev": "node --env-file-if-exists=.env src/cli.js run --dry-run --no-email --preview out/preview.html",
+    "smtp": "node --env-file-if-exists=.env src/cli.js check-smtp"
+  },
+  "keywords": [
+    "monitor",
+    "crawler",
+    "rss",
+    "email",
+    "university"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "iconv-lite": "^0.7.3",
+    "nodemailer": "^10.3.1",
+    "yaml": "^2.9.1"
+  }
+}

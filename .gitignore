@@ -1,0 +1,11 @@
+node_modules/
+.env
+
+# 本地预览文件，不需要进仓库
+out/preview.html
+out/preview.png
+tmp/
+
+*.log
+.DS_Store
+Thumbs.db

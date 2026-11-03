@@ -1,0 +1,119 @@
+# ============================================================
+# 通告雷达 配置文件
+# 改完先跑 `node src/cli.js test` 看解析对不对，再跑 run
+# ============================================================
+
+# 全局时区（影响邮件里的时间和 Markdown 文件名）
+timezone: Asia/Shanghai
+
+# 去重状态文件；GitHub Actions 里要把它提交回仓库，才能记住「哪些已经推过」
+state_file: state/state.json
+
+# 状态保留天数（超过就自动清理，防止文件无限膨胀）
+retention_days: 120
+
+# 抓取设置
+request:
+  timeout: 20000      # 单次请求超时（毫秒）
+  retries: 2          # 失败重试次数
+  concurrency: 3      # 抓详情页时的并发数
+
+# ------------------------------------------------------------
+# 关键词：全局默认，所有站点共用；站点内还可以再叠加
+#   include      命中任意一个就推送（普通子串匹配，忽略大小写、全半角）
+#   include_mode all = 必须全部命中（默认 any）
+#   exclude      命中任意一个就丢弃（比如「招聘」「招标」）
+#   regex        正则，和 include 是「或」的关系
+#   match_in     title（只看标题，默认）或 title+content（连正文一起搜，慢一些）
+# ------------------------------------------------------------
+keywords:
+  include:
+    - 推免
+    - 保研
+    - 夏令营
+    - 预推免
+    - 奖学金
+    - 选课
+    - 报名
+    - 竞赛
+    - 学分
+    - 学籍
+    - 交流
+    - 交换
+    - 讲座
+  exclude:
+    - 招聘
+    - 招标
+    - 中标
+    - 采购
+  include_mode: any
+  match_in: title
+
+# ------------------------------------------------------------
+# 站点列表：想加学校就复制一段，改 name / url / list
+# 选择器不知道怎么填？跑：
+#   node src/cli.js inspect "https://你的学校/通知列表页"
+# ------------------------------------------------------------
+sites:
+  - name: 复旦大学教务处
+    url: https://jwc.fudan.edu.cn/9397/list.htm
+    # charset: auto      # 默认自动识别；乱码时手动写 gbk 或 utf-8
+    list:
+      item: "table.wp_article_list_table tr"
+      title: "a"
+      link: "a"
+      date: "td.ti"
+    detail:
+      # 复旦的通知详情页是 JS 动态渲染的，抓到的是「加载中，请稍后」
+      # 所以这里关闭详情抓取；标题级关键词匹配不受影响
+      enabled: false
+      content: "div.wp_articlecontent"
+      max_chars: 1500
+      max_items: 10
+
+  - name: 武汉大学通知公告
+    url: https://www.whu.edu.cn/tzgg.htm
+    list:
+      item: "div.table tr"
+      title: "a"
+      link: "a"
+      date: "td:nth-child(3)"
+    detail:
+      enabled: false
+
+# ------------------------------------------------------------
+# 首次订阅某站点时：把当前列表里最近 N 条作为「样例」发一封，
+# 方便你确认解析对不对。不想收就把 mode 改成 silent。
+# ------------------------------------------------------------
+first_run:
+  mode: digest
+  limit: 5
+
+# ------------------------------------------------------------
+# 邮件
+# 密码不要写在这里！用环境变量：
+#   SMTP_HOST / SMTP_PORT / SMTP_SECURE / SMTP_USER / SMTP_PASS / MAIL_TO
+# 本地可以放在 .env 里（仓库已 gitignore），Actions 里放 Secrets。
+# ------------------------------------------------------------
+email:
+  enabled: true
+  to:
+    - your-name@qq.com
+  from_name: 通告雷达
+  subject_prefix: "[通告雷达]"
+  mode: digest            # digest=一封汇总；per_item=一条一封
+  send_on_error: true     # 抓取失败时也发一封提醒，避免「静默失效」
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    secure: true
+    user: your-name@qq.com
+    pass: ""
+
+# ------------------------------------------------------------
+# 额外产出 Markdown 汇总（out/latest.md），不想提交到仓库可以关掉
+# ------------------------------------------------------------
+export:
+  enabled: true
+  dir: out
+  history: true

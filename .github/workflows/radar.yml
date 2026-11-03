@@ -1,0 +1,58 @@
+name: notice-radar
+
+# GitHub 的 cron 用 UTC。北京时间 = UTC+8
+#   00:00 UTC = 08:00 北京
+#   04:00 UTC = 12:00 北京
+#   11:00 UTC = 19:00 北京
+on:
+  schedule:
+    - cron: '0 0 * * *'
+    - cron: '0 4 * * *'
+    - cron: '0 11 * * *'
+  workflow_dispatch: # 也可以在网页上手动点一下立即运行
+
+permissions:
+  contents: write # 需要把 state/ 提交回仓库，才能记住哪些通告已经推过
+
+# 避免两次定时任务同时跑，导致 state 冲突
+concurrency:
+  group: notice-radar
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 检查通告并发送邮件
+        run: node src/cli.js run --strict
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+      - name: 提交去重状态
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -z "$(git status --porcelain state out)" ]; then
+            echo "状态没有变化，跳过提交"
+            exit 0
+          fi
+          git add -A
+          git commit -m "chore: 更新通告去重状态 [skip ci]"
+          git push
