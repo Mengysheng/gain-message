@@ -150,6 +150,7 @@ node src/cli.js doctor
 | `node src/cli.js test [--json]` | 只解析打印，不改状态不发信 |
 | `node src/cli.js run` | 正式跑：抓取 → 匹配 → 发信 → 存状态 |
 | `node src/cli.js check-smtp` | 验证 SMTP 能否登录 |
+| `node src/cli.js send-test` | 只发一封测试邮件，不抓取、不改状态 |
 | `npm test` | 47 个单元测试（不需要网络） |
 
 `run` 常用开关：`--dry-run`（预览）、`--no-email`（只写 Markdown）、`--init`（把当前列表标记为已读）、`--site 名称`（只跑某站）、`--strict`（抓取失败时退出码 2，让 Actions 变红）、`--preview 文件`（导出邮件 HTML）。

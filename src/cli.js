@@ -36,6 +36,7 @@ const HELP = `通告雷达 notice-radar
   node src/cli.js test [--site 名称]        只解析、只打印，不改状态、不发邮件
   node src/cli.js run [选项]                正式检查：抓取 → 匹配 → 发邮件 / 写汇总 → 存状态
   node src/cli.js check-smtp               用当前配置验证邮箱能否登录（会真连服务器）
+  node src/cli.js send-test                发一封测试邮件，不抓取、不改状态（验证发信通道）
 
 run 的选项：
   --dry-run        不发邮件、不写状态（用来预览会推什么）
@@ -445,6 +446,52 @@ async function cmdCheckSmtp(args) {
   }
 }
 
+/**
+ * 只验证发信通道：用假数据渲染一封邮件发出去，不抓取、不改状态。
+ * 用来回答「到底是我没收到，还是它没发出来」。
+ */
+async function cmdSendTest(args) {
+  const config = requireConfig(args);
+  assertEmailConfig(config);
+
+  const generatedAt = formatDateTime(new Date(), config.timezone);
+  const groups = [
+    {
+      name: '测试站点（数据是假的，只验证发信）',
+      url: 'https://example.edu.cn/notice',
+      items: [
+        {
+          title: '关于2027年春季学期校际交换生选拔工作的通知',
+          url: 'https://example.edu.cn/1.htm',
+          date: '2026-11-05',
+          keywords: ['交换'],
+        },
+        {
+          title: '综合研究实习生【示例公司】',
+          url: 'https://example.edu.cn/2.htm',
+          date: '2026-11-04',
+          keywords: ['实习'],
+          excerpt: '这是一封测试邮件的示例摘要，用于确认邮件排版、高亮和链接都正常。',
+        },
+      ],
+    },
+  ];
+
+  const html = renderDigest({
+    groups,
+    generatedAt: `${generatedAt}（测试邮件）`,
+    siteCount: 0,
+    errors: [],
+    timezone: config.timezone,
+  });
+  const text = renderDigestText({ groups, generatedAt, siteCount: 0, errors: [] });
+  const subject = `${config.email.subject_prefix || '[通告雷达]'} 测试邮件：发信通道正常`;
+
+  await sendMail(config, { subject, html, text });
+  log(`测试邮件已发送到：${(config.email.to || []).join(', ')}`);
+  log('收到就说明 SMTP、收件地址、邮件排版都正常；没收到先查垃圾箱。');
+}
+
 async function cmdRun(args) {
   const config = requireConfig(args);
   const state = loadState(config.state_file);
@@ -679,6 +726,7 @@ async function main() {
     if (command === 'test') return await cmdTest(args);
     if (command === 'run') return await cmdRun(args);
     if (command === 'check-smtp') return await cmdCheckSmtp(args);
+    if (command === 'send-test') return await cmdSendTest(args);
     console.log(`未知命令：${command}\n`);
     console.log(HELP);
     process.exitCode = 1;

@@ -10,6 +10,14 @@ on:
     - cron: '0 4 * * *'
     - cron: '0 11 * * *'
   workflow_dispatch: # 也可以在网页上手动点一下立即运行
+    inputs:
+      mode:
+        description: '运行模式：run=正常抓取；test-email=只发一封测试邮件（不抓取、不改状态）'
+        type: choice
+        options:
+          - run
+          - test-email
+        default: run
 
 permissions:
   contents: write # 需要把 state/ 提交回仓库，才能记住哪些通告已经推过
@@ -58,8 +66,20 @@ jobs:
             exit 1
           fi
 
+      - name: 只发一封测试邮件（手工触发时选 test-email）
+        if: github.event.inputs.mode == 'test-email'
+        run: node src/cli.js send-test
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
       - name: 检查通告并发送邮件
         id: radar
+        if: github.event.inputs.mode != 'test-email'
         continue-on-error: true
         run: node src/cli.js run --strict
         env:
@@ -73,7 +93,7 @@ jobs:
       # 云端到国内站点的跨境链路偶尔会抖一下（表现为 fetch failed），
       # 隔两分钟再试通常就好了。已经推送过的条目不会重复推。
       - name: 失败后等两分钟重试一次
-        if: steps.radar.outcome == 'failure'
+        if: github.event.inputs.mode != 'test-email' && steps.radar.outcome == 'failure'
         run: |
           echo "上一次运行失败，2 分钟后重试（跨境链路抖动通常能自愈）"
           {
