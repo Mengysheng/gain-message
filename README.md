@@ -158,7 +158,7 @@ node src/cli.js doctor
 输出：
 
 - **邮件**：一封汇总，命中词高亮、按站点分组、首次订阅附样例；`email.mode: per_item` 可改成一条一封。
-- **Markdown**：`out/latest.md` + `out/archive/`，方便贴进 Notion / Obsidian。
+- **Markdown**：本地跑会写到 `out/latest.md` + `out/archive/`，方便贴进 Notion / Obsidian；Actions 里则作为 **Artifacts** 上传（保留 30 天），不提交进仓库，避免和本地冲突。
 - **告警**：站点解析到 0 条时发提醒邮件，避免「看起来没通知」的静默失效。
 
 ## 常见问题

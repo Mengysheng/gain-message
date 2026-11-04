@@ -111,15 +111,25 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
 
+      # 汇总文件放 Artifacts，不提交进仓库：避免和本地冲突，也避免仓库膨胀
+      - name: 上传 Markdown 汇总
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: notice-radar-digest
+          path: out/
+          if-no-files-found: ignore
+          retention-days: 30
+
       - name: 提交去重状态
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if [ -z "$(git status --porcelain state out)" ]; then
+          if [ -z "$(git status --porcelain state)" ]; then
             echo "状态没有变化，跳过提交"
             exit 0
           fi
-          git add -A
+          git add state
           git commit -m "chore: 更新通告去重状态 [skip ci]"
           git push

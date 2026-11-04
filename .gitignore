@@ -1,13 +1,11 @@
 node_modules/
 .env
-
-# 本地预览 / 演示产物，不需要进仓库
-out/preview.html
-out/preview.png
-out/demo.html
 tmp/
 
-# out/latest.md 和 out/archive/ 是刻意提交的：Actions 里作为汇总存档
+# out/ 是每次运行都会变的产物：不进 git，避免和 Actions 的提交撞冲突，
+# 也避免仓库无限膨胀。需要在仓库里看汇总时，去 Actions 的 Artifacts 下载。
+out/
+
 *.log
 *.tgz
 .DS_Store
