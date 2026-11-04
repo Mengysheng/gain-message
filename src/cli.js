@@ -595,7 +595,66 @@ async function cmdRun(args) {
   for (const error of errors) console.log(`✗ ${error.name}：${error.message}`);
   if (!groups.length && !errors.length) console.log('没有需要推送的新通告。');
 
-  if (errors.length && args.flags.strict) process.exitCode = 2;
+  if (errors.length && args.flags.strict) {
+    writeStepSummary(
+      [
+        `## ⚠️ ${errors.length} 个站点抓取失败`,
+        '',
+        '| 站点 | 原因 |',
+        '|---|---|',
+        ...errors.map((error) => `| ${escapeCell(error.name)} | ${escapeCell(error.message)} |`),
+        '',
+        '多半是页面改版导致选择器失效：本地跑 `node src/cli.js inspect <url>` 重新生成选择器，改 `config.yaml` 后重新推送。',
+      ].join('\n'),
+    );
+    process.exitCode = 2;
+  }
+}
+
+function escapeCell(text) {
+  return String(text ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' ');
+}
+
+/** 把结论写进 GitHub Actions 的 Job Summary，不用翻日志也能看到失败原因 */
+function writeStepSummary(markdown) {
+  const file = process.env.GITHUB_STEP_SUMMARY;
+  if (!file) return;
+  try {
+    fs.appendFileSync(file, `${markdown}\n`);
+  } catch {
+    // 摘要写不进去不影响主流程
+  }
+}
+
+function failureAdvice(message) {
+  if (/邮件配置不完整|smtp\.pass|smtp\.user/.test(message)) {
+    return [
+      '### 怎么修',
+      '',
+      '在仓库 **Settings → Secrets and variables → Actions** 里补齐这 5 个 Secret：',
+      '',
+      '`SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASS`、`MAIL_TO`',
+      '',
+      'QQ 邮箱的 `SMTP_PASS` 是**授权码**（设置 → 账号 → 开启 SMTP 服务），不是登录密码。',
+    ].join('\n');
+  }
+  if (/Invalid login|535|EAUTH/i.test(message)) {
+    return [
+      '### 怎么修',
+      '',
+      'SMTP 登录被拒绝，通常是：',
+      '',
+      '1. `SMTP_PASS` 填成了登录密码而不是授权码',
+      '2. 邮箱没开启 SMTP 服务',
+      '3. 端口与 `SMTP_SECURE` 不匹配（465 配 true，587 配 false）',
+    ].join('\n');
+  }
+  return [
+    '### 怎么修',
+    '',
+    '- 抓取类错误：本地跑 `node src/cli.js inspect <url>` 重新生成选择器',
+    '- 配置类错误：本地跑 `node src/cli.js doctor` 看具体哪项不通过',
+  ].join('\n');
 }
 
 async function main() {
@@ -619,6 +678,7 @@ async function main() {
     process.exitCode = 1;
   } catch (error) {
     logError(error.message);
+    writeStepSummary(['## ❌ 运行失败', '', '```', String(error.message), '```', '', failureAdvice(error.message)].join('\n'));
     if (error.isConfigError) process.exitCode = 1;
     else if (process.env.RADAR_DEBUG) console.error(error);
     process.exitCode = 1;
