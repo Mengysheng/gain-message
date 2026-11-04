@@ -137,4 +137,5 @@ node src/cli.js run --dry-run --no-email --preview out/preview.html
 | 邮件进垃圾箱 | 把发件人加白名单；QQ 邮箱自测时容易进垃圾箱 |
 | 定时没触发 | 仓库 60 天无提交会自动停用定时任务，去 Actions 页点一次 Enable |
 | **本地能抓、Actions 报 403** | 先看响应体：带 `window.location.href` 的是 Cookie 挑战（0.1.1+ 自动处理）；普通错误页才是 IP 拦截，见 [proxy.md](proxy.md) |
+| 日志写 `fetch failed` | 云端到国内站点的跨境链路抖了一下（不是页面没更新）。已自动重试；偶发可忽略，频繁发生就配 `proxy` 见 [proxy.md](proxy.md) |
 | 两边都 403 | 先确认是不是 Cookie 挑战；不是的话加 `headers.Referer`，仍不行说明封了非中国 IP |

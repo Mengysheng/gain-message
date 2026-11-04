@@ -9,7 +9,7 @@ retention_days: 120
 
 request:
   timeout: 20000
-  retries: 2
+  retries: 3          # 失败重试次数（网络抖动时按 1.5s / 6s / 13.5s 退避）
   concurrency: 3
 
 # ------------------------------------------------------------

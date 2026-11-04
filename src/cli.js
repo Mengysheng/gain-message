@@ -121,7 +121,7 @@ async function prepareSite(config, site, state, { withDetail = true } = {}) {
       const page = await fetchPage(url, {
         charset: site.charset || 'auto',
         timeout: config.request?.timeout ?? 20000,
-        retries: config.request?.retries ?? 2,
+        retries: config.request?.retries ?? 3,
         headers: site.headers || {},
         proxy,
       });

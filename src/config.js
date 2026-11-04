@@ -7,7 +7,7 @@ const DEFAULTS = {
   state_file: 'state/state.json',
   retention_days: 120,
   first_run: { mode: 'digest', limit: 5 },
-  request: { timeout: 20000, retries: 2, concurrency: 3 },
+  request: { timeout: 20000, retries: 3, concurrency: 3 },
   export: { enabled: true, dir: 'out' },
   email: {
     enabled: true,

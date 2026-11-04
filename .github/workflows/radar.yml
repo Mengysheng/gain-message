@@ -59,7 +59,30 @@ jobs:
           fi
 
       - name: 检查通告并发送邮件
+        id: radar
+        continue-on-error: true
         run: node src/cli.js run --strict
+        env:
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+
+      # 云端到国内站点的跨境链路偶尔会抖一下（表现为 fetch failed），
+      # 隔两分钟再试通常就好了。已经推送过的条目不会重复推。
+      - name: 失败后等两分钟重试一次
+        if: steps.radar.outcome == 'failure'
+        run: |
+          echo "上一次运行失败，2 分钟后重试（跨境链路抖动通常能自愈）"
+          {
+            echo "### ⏳ 第一次运行失败，2 分钟后自动重试"
+            echo ""
+            echo "如果重试仍失败，看下面这一次的 Job Summary。"
+          } >> "$GITHUB_STEP_SUMMARY"
+          sleep 120
+          node src/cli.js run --strict
         env:
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
           SMTP_PORT: ${{ secrets.SMTP_PORT }}

@@ -9,6 +9,7 @@ import {
   isCookieChallenge,
   resetCookieJar,
   fetchPage,
+  describeFetchError,
 } from '../src/fetch.js';
 
 test('buildRequestUrl：没有代理时原样返回', () => {
@@ -87,4 +88,13 @@ test('cookie 挑战：自动带 cookie 重试并拿到正文', async (t) => {
   assert.equal(page.status, 200);
   assert.match(page.html, /交换生选拔/);
   assert.equal(hits, 2, '应该请求两次：挑战 + 带 cookie 重试');
+});
+
+test('describeFetchError：把底层网络错误翻译成人话', () => {
+  assert.match(describeFetchError({ cause: { code: 'ECONNRESET' } }), /连接被重置/);
+  assert.match(describeFetchError({ cause: { code: 'ENOTFOUND' } }), /域名解析失败/);
+  assert.match(describeFetchError({ cause: { code: 'UND_ERR_CONNECT_TIMEOUT' } }), /连接超时/);
+  assert.match(describeFetchError({ message: 'fetch failed' }), /网络连接失败/);
+  assert.match(describeFetchError({ message: 'HTTP 403' }), /HTTP 403/);
+  assert.equal(describeFetchError(null), '未知错误');
 });

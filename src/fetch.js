@@ -172,10 +172,39 @@ export async function fetchPage(url, options = {}) {
       };
     } catch (error) {
       lastError = error;
-      if (attempt < retries) await sleep(800 * (attempt + 1));
+      if (attempt < retries) await sleep(1500 * (attempt + 1) ** 2);
     }
   }
-  throw new Error(`抓取失败 ${url}：${lastError?.message || '未知错误'}`);
+  throw new Error(`抓取失败 ${url}：${describeFetchError(lastError)}`);
+}
+
+const NETWORK_CODES = {
+  ENOTFOUND: '域名解析失败（DNS 查不到这个域名）',
+  EAI_AGAIN: 'DNS 暂时不可用',
+  ECONNREFUSED: '连接被拒绝（端口没开或被防火墙拦截）',
+  ECONNRESET: '连接被重置（多半是跨境链路被中断）',
+  ETIMEDOUT: '连接超时',
+  EHOSTUNREACH: '主机不可达',
+  ENETUNREACH: '网络不可达',
+  UND_ERR_CONNECT_TIMEOUT: '连接超时（20 秒内没建好连接）',
+  UND_ERR_HEADERS_TIMEOUT: '等响应头超时',
+  UND_ERR_SOCKET: '连接被对端关闭',
+  CERT_HAS_EXPIRED: 'HTTPS 证书过期',
+  DEPTH_ZERO_SELF_SIGNED_CERT: 'HTTPS 证书不被信任',
+};
+
+/**
+ * 把底层网络错误翻译成人能看懂的一句话。
+ * 云端跑的时候最常见的是「连接被重置」——跨境链路抖一下就是这样。
+ */
+export function describeFetchError(error) {
+  if (!error) return '未知错误';
+  const code = error.cause?.code || error.code || '';
+  const hint = NETWORK_CODES[code];
+  if (hint) return `${hint} [${code}]`;
+  const message = error.cause?.message || error.message || String(error);
+  if (/fetch failed/i.test(message)) return '网络连接失败（跨境链路抖动或被对方断开，稍后重试通常能恢复）';
+  return message;
 }
 
 /** 小并发映射，避免一次性打爆站点 */
