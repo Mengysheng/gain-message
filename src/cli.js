@@ -625,7 +625,11 @@ async function cmdRun(args) {
     } else {
       const html = renderDigest({ groups, generatedAt, siteCount: sites.length, errors, timezone: config.timezone });
       const text = renderDigestText({ groups, generatedAt, siteCount: sites.length, errors });
-      const subject = buildSubject(config, { hits: totalHits, samples: totalSamples }, groups.map((g) => g.name));
+      const subject = buildSubject(
+        config,
+        { hits: totalHits, samples: totalSamples, errors: errors.length },
+        groups.map((g) => g.name),
+      );
       await sendMail(config, { subject, html, text });
       log(`邮件已发送：${subject}`);
     }

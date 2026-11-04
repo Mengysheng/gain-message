@@ -150,11 +150,17 @@ export function renderDigestText({ groups, generatedAt, siteCount, errors = [] }
   return lines.join('\n');
 }
 
-export function buildSubject(config, { hits = 0, samples = 0 } = {}, siteNames = []) {
+export function buildSubject(config, { hits = 0, samples = 0, errors = 0 } = {}, siteNames = []) {
   const prefix = config.email.subject_prefix || '[通告雷达]';
   const names = siteNames.slice(0, 2).join('、');
   const more = siteNames.length > 2 ? ` 等 ${siteNames.length} 站` : '';
-  if (hits > 0) return `${prefix} ${hits} 条新通告 · ${names}${more}`;
+
+  if (hits > 0) {
+    return errors > 0
+      ? `${prefix} ${hits} 条新通告（${errors} 个站点异常） · ${names}${more}`
+      : `${prefix} ${hits} 条新通告 · ${names}${more}`;
+  }
+  if (errors > 0) return `${prefix} ⚠️ ${errors} 个站点抓取失败`;
   if (samples > 0) return `${prefix} 订阅成功，附 ${samples} 条样例`;
   return `${prefix} 本次没有命中`;
 }
