@@ -136,5 +136,5 @@ node src/cli.js run --dry-run --no-email --preview out/preview.html
 | 收到邮件但全是旧通告 | `state/` 没提交成功：看最后一步 `git push` 有没有权限错误 |
 | 邮件进垃圾箱 | 把发件人加白名单；QQ 邮箱自测时容易进垃圾箱 |
 | 定时没触发 | 仓库 60 天无提交会自动停用定时任务，去 Actions 页点一次 Enable |
-| **本地能抓、Actions 报 403** | 站点拦截机房 IP，配 `proxy` 走 Cloudflare Worker，见 [proxy.md](proxy.md) |
-| 两边都 403 | 加 `headers.Referer`，或降低频率；仍不行说明封了非中国 IP |
+| **本地能抓、Actions 报 403** | 先看响应体：带 `window.location.href` 的是 Cookie 挑战（0.1.1+ 自动处理）；普通错误页才是 IP 拦截，见 [proxy.md](proxy.md) |
+| 两边都 403 | 先确认是不是 Cookie 挑战；不是的话加 `headers.Referer`，仍不行说明封了非中国 IP |

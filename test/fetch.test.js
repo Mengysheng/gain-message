@@ -1,7 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import http from 'node:http';
 import iconv from 'iconv-lite';
-import { buildRequestUrl, detectCharset, decodeBody } from '../src/fetch.js';
+import {
+  buildRequestUrl,
+  detectCharset,
+  decodeBody,
+  isCookieChallenge,
+  resetCookieJar,
+  fetchPage,
+} from '../src/fetch.js';
 
 test('buildRequestUrl：没有代理时原样返回', () => {
   const url = 'https://jy.scu.edu.cn/index/index/employjob.html?type=2';
@@ -45,4 +53,38 @@ test('detectCharset：header 没写时读 meta', () => {
 test('decodeBody：GBK 页面能正确解码', () => {
   const gbk = iconv.encode('<html>关于推免工作的通知</html>', 'gbk');
   assert.match(decodeBody(gbk, 'gbk'), /关于推免工作的通知/);
+});
+
+test('isCookieChallenge：识别「发 cookie 再跳回」的挑战页', () => {
+  const body = '<html><meta charset="utf-8" /><title></title><div></div></html> <script> window.location.href ="/x"; </script>';
+  assert.equal(isCookieChallenge(403, body), true);
+  assert.equal(isCookieChallenge(200, body), false, '200 不算挑战');
+  assert.equal(isCookieChallenge(403, '<html>正常的 403 页面，很长'.repeat(100) + '</html>'), false, '长页面不算挑战');
+});
+
+test('cookie 挑战：自动带 cookie 重试并拿到正文', async (t) => {
+  resetCookieJar();
+  let hits = 0;
+  const server = http.createServer((req, res) => {
+    hits += 1;
+    if (!String(req.headers.cookie || '').includes('token=ok')) {
+      res.writeHead(403, {
+        'content-type': 'text/html; charset=utf-8',
+        'set-cookie': 'token=ok; Path=/',
+      });
+      res.end('<html><script>window.location.href="/list"</script></html>');
+      return;
+    }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
+    res.end('<html><body>2026-11-05 关于交换生选拔的通知</body></html>');
+  });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  t.after(() => server.close());
+
+  const { port } = server.address();
+  const page = await fetchPage(`http://127.0.0.1:${port}/list`, { retries: 0 });
+
+  assert.equal(page.status, 200);
+  assert.match(page.html, /交换生选拔/);
+  assert.equal(hits, 2, '应该请求两次：挑战 + 带 cookie 重试');
 });

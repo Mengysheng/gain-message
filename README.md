@@ -180,8 +180,8 @@ node src/cli.js doctor
 **站点改版了？**
 会收到告警邮件；`inspect` 重新生成选择器即可。
 
-**本地能抓，GitHub Actions 上 403？**
-不是选择器问题，是站点拦截了机房 IP。用 `proxy` 走一层 Cloudflare Worker（免费，5 分钟）即可，见 [docs/proxy.md](docs/proxy.md)。
+**报 403？**
+先看响应体：如果是一个带 `window.location.href` 的小页面，那是 Cookie 挑战，0.1.1 起会自动保存 cookie 并重试，不用管。如果响应体是正常的错误页、且只有 Actions 报 403，那才是机房 IP 被拦，用 `proxy` 走一层 Cloudflare Worker 即可，见 [docs/proxy.md](docs/proxy.md)。
 
 更多排错见 [docs/deploy.md](docs/deploy.md#排障)。
 

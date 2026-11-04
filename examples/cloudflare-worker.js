@@ -65,6 +65,9 @@ export default {
           'user-agent': UA,
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'accept-language': 'zh-CN,zh;q=0.9,en;q=0.6',
+          // 把调用方带来的 cookie 透传给目标站点：
+          // 有些站点用「发 cookie 再跳回」的挑战，缺了它就会一直 403
+          ...(request.headers.get('cookie') ? { cookie: request.headers.get('cookie') } : {}),
         },
         redirect: 'follow',
       });
@@ -76,6 +79,10 @@ export default {
     headers.set('content-type', upstream.headers.get('content-type') || 'text/html; charset=utf-8');
     headers.set('cache-control', 'no-store');
     headers.set('x-proxy-status', String(upstream.status));
+    // 把挑战页的 Set-Cookie 原样传回去，客户端才能完成「带 cookie 重试」
+    for (const cookie of upstream.headers.getSetCookie?.() ?? []) {
+      headers.append('set-cookie', cookie);
+    }
 
     return new Response(upstream.body, { status: upstream.status, headers });
   },

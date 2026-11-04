@@ -49,8 +49,60 @@ export function buildRequestUrl(url, proxy) {
   return `${template}${encodeURIComponent(url)}`;
 }
 
+// 每个站点一个简易 cookie 罐：国内不少公告站用「发 cookie 再跳回原页」的挑战
+const cookieJar = new Map();
+
+function jarKey(url) {
+  try {
+    return new URL(url).host;
+  } catch {
+    return url;
+  }
+}
+
+function saveCookies(url, res) {
+  const key = jarKey(url);
+  const jar = cookieJar.get(key) || new Map();
+  const list =
+    typeof res.headers.getSetCookie === 'function'
+      ? res.headers.getSetCookie()
+      : [res.headers.get('set-cookie')].filter(Boolean);
+
+  for (const line of list) {
+    const pair = String(line).split(';')[0];
+    const index = pair.indexOf('=');
+    if (index > 0) {
+      const name = pair.slice(0, index).trim();
+      const value = pair.slice(index + 1).trim();
+      if (name) jar.set(name, value);
+    }
+  }
+  if (jar.size) cookieJar.set(key, jar);
+}
+
+function cookieHeader(url) {
+  const jar = cookieJar.get(jarKey(url));
+  if (!jar || !jar.size) return '';
+  return [...jar].map(([name, value]) => `${name}=${value}`).join('; ');
+}
+
+/** 清空 cookie 罐（测试用） */
+export function resetCookieJar() {
+  cookieJar.clear();
+}
+
 /**
- * 抓页面，带重试、超时、编码识别。
+ * 识别「设置 cookie 后跳回原页」的挑战页。
+ * 典型特征：403 + 极短 HTML + window.location.href + Set-Cookie。
+ */
+export function isCookieChallenge(status, html) {
+  if (status !== 403 && status !== 412 && status !== 202) return false;
+  if (!html || html.length > 2000) return false;
+  return /window\.location(\.href)?\s*=/.test(html) || /document\.cookie/i.test(html);
+}
+
+/**
+ * 抓页面，带重试、超时、编码识别、cookie 挑战处理。
  * 走代理时 finalUrl 仍然返回原始地址，保证相对链接能正确补全。
  * @returns {Promise<{html:string,status:number,finalUrl:string,charset:string,fetchedVia:string}>}
  */
@@ -65,11 +117,11 @@ export async function fetchPage(url, options = {}) {
 
   const requestUrl = buildRequestUrl(url, proxy);
 
-  let lastError;
-  for (let attempt = 0; attempt <= retries; attempt += 1) {
+  const requestOnce = async () => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
     try {
+      const cookie = cookieHeader(url);
       const res = await fetch(requestUrl, {
         redirect: 'follow',
         signal: controller.signal,
@@ -77,17 +129,42 @@ export async function fetchPage(url, options = {}) {
           'user-agent': UA,
           accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'accept-language': 'zh-CN,zh;q=0.9,en;q=0.6',
+          referer: url,
+          ...(cookie ? { cookie } : {}),
           ...headers,
         },
       });
       const buffer = Buffer.from(await res.arrayBuffer());
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const enc =
+      saveCookies(url, res);
+      return { res, buffer };
+    } finally {
+      clearTimeout(timer);
+    }
+  };
+
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      let { res, buffer } = await requestOnce();
+      let enc =
         charset && charset !== 'auto'
           ? normalizeEncoding(charset)
           : detectCharset(res.headers.get('content-type'), buffer);
+      let html = decodeBody(buffer, enc);
+
+      // 站点发了 cookie 挑战：带上刚存的 cookie 再请求一次
+      if (isCookieChallenge(res.status, html)) {
+        ({ res, buffer } = await requestOnce());
+        enc =
+          charset && charset !== 'auto'
+            ? normalizeEncoding(charset)
+            : detectCharset(res.headers.get('content-type'), buffer);
+        html = decodeBody(buffer, enc);
+      }
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return {
-        html: decodeBody(buffer, enc),
+        html,
         status: res.status,
         finalUrl: url,
         charset: enc,
@@ -96,8 +173,6 @@ export async function fetchPage(url, options = {}) {
     } catch (error) {
       lastError = error;
       if (attempt < retries) await sleep(800 * (attempt + 1));
-    } finally {
-      clearTimeout(timer);
     }
   }
   throw new Error(`抓取失败 ${url}：${lastError?.message || '未知错误'}`);

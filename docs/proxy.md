@@ -1,24 +1,38 @@
-# 403：站点拦截了机房 IP
+# 403：先分清是 Cookie 挑战还是 IP 拦截
 
-## 现象
+## 第一步：看 403 的响应体
 
-- 本地 `node src/cli.js test` 一切正常，能抓到 20 条
-- 放到 GitHub Actions 上，某些站点报 `抓取失败：HTTP 403`
-- 同一个仓库里其他站点正常（说明不是配置写错）
+很多国内站点的 403 **不是** IP 拦截，而是一层「发 cookie 再跳回原页」的挑战：
 
-这就是 **WAF 按来源 IP 拒绝**：GitHub 的 runner 跑在 Azure 机房，很多国内站点的安全策略会直接拒绝云厂商 IP 段。换 UA、加 Referer 基本没用，因为决策依据是 IP。
+```
+403  <html><meta charset="utf-8"><title></title><div></div></html>
+     <script>window.location.href = "/index/index/newslist.html?data=MQ";</script>
+     set-cookie: d5d018f7...=fc16106f...
+```
 
-## 判断方法
+浏览器会自动带 cookie 重载，所以人眼看着正常；脚本不存 cookie 就会一直 403。
 
-在 Actions 的运行日志里看错误码：
+**遇到这种，不需要代理。** 当前版本（0.1.1+）已经内置处理：识别挑战页 → 保存 cookie → 自动重试一次。升级后重跑即可。
+
+判断依据：403 响应体很短（几百字节）、里面有 `window.location.href` 或 `document.cookie`、且带 `Set-Cookie`。
+
+## 第二步：确认是不是 IP 拦截
+
+如果 403 的响应体是正常的错误页（不是上面那种挑战页），并且满足：
+
+- 本地 `node src/cli.js test` 正常，GitHub Actions 报 403
+- 同一个仓库其他站点正常
+
+那才是 **WAF 按来源 IP 拒绝**：GitHub 的 runner 跑在 Azure 机房，很多国内站点的策略会直接拒绝云厂商 IP 段。换 UA、加 Referer 基本没用，因为决策依据是 IP。
 
 | 现象 | 结论 |
 |---|---|
-| 本地 200，Actions 403 | 被拦截，看本文 |
-| 两边都 403 | 站点封了整个 UA 或要求登录，先试 `headers: { Referer: ... }` |
+| 403 响应体是 `window.location.href` 小页面 | Cookie 挑战，升级到 0.1.1+ 即可 |
+| 本地 200，Actions 403，响应体是普通错误页 | IP 拦截，继续看本文 |
+| 两边都 403，响应体是挑战页 | 也是 Cookie 挑战（浏览器缓存曾让你误判） |
 | 本地也 404 | 地址写错或页面改版，跟 IP 无关 |
 
-## 三种方案对比
+## 三种方案对比（仅针对 IP 拦截）
 
 | 方案 | 成本 | 稳定性 | 适合 |
 |---|---|---|---|

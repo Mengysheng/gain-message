@@ -6,6 +6,7 @@
 
 ### 新增
 
+- **Cookie 挑战自动处理**：站点返回「发 cookie 再跳回原页」的 403 时，自动保存 cookie 并重试一次（川大就业网就是这种，不需要代理）
 - **抓取代理**：`site.proxy` / `FETCH_PROXY` / `--proxy`，解决“本地能抓、GitHub Actions 报 403”的机房 IP 拦截问题；附 Cloudflare Worker 实现（`examples/cloudflare-worker.js`）与 [docs/proxy.md](docs/proxy.md)
 - GitHub Actions 失败时自动写 **Job Summary**，直接给出原因和修复步骤，不用翻日志
 - 工作流增加 Secrets 预检查，缺哪个 Secret 直接点名
@@ -18,7 +19,7 @@
 
 ### 测试
 
-- 单测从 38 增至 47，新增代理地址构造、GBK 解码、代理链路端到端
+- 单测从 38 增至 49，新增代理地址构造、GBK 解码、Cookie 挑战识别与重试、代理链路端到端
 
 ## [0.1.0] - 2026-11-06
 
