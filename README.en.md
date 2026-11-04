@@ -2,6 +2,8 @@
 
 **Keyword-filtered notice monitor for university websites — daily email digest, zero server.**
 
+Repo: [Mengysheng/gain-message](https://github.com/Mengysheng/gain-message) · 中文文档：[README.md](README.md)
+
 Many Chinese universities publish scholarships, exchange programs and internship openings on
 plain notice boards with no RSS feed. Missing a three-day application window is easy.
 

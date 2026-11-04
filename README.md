@@ -1,5 +1,7 @@
 # 通告雷达 notice-radar
 
+> 仓库：[Mengysheng/gain-message](https://github.com/Mengysheng/gain-message)
+
 按关键词盯着学校官网的通告栏，**只把命中关键词的新通告**汇总成一封邮件发给你。不用学校门户账号、不用浏览器插件、不用服务器——挂在 GitHub Actions 上零成本运行。
 
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933)
@@ -7,9 +9,8 @@
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![deps](https://img.shields.io/badge/dependencies-4-brightgreen)
 
-<!-- 换成你自己的仓库地址后取消注释，CI 徽章就会亮
-[![ci](https://github.com/USER/notice-radar/actions/workflows/ci.yml/badge.svg)](https://github.com/USER/notice-radar/actions/workflows/ci.yml)
--->
+[![ci](https://github.com/Mengysheng/gain-message/actions/workflows/ci.yml/badge.svg)](https://github.com/Mengysheng/gain-message/actions/workflows/ci.yml)
+[![notice-radar](https://github.com/Mengysheng/gain-message/actions/workflows/radar.yml/badge.svg)](https://github.com/Mengysheng/gain-message/actions/workflows/radar.yml)
 
 ![邮件效果](docs/preview.png)
 
@@ -120,6 +121,9 @@ email:
 cp examples/scu.yaml config.yaml
 node src/cli.js doctor
 ```
+
+> 本仓库根目录的 `config.yaml` 现在就是四川大学那份（维护者自用），所以 clone 下来跑 `doctor` 是有数据的。
+> 不是川大的话，把 `sites:` 整段换成你自己的即可，或者用 `config.example.yaml` 重开一份。
 
 想加自己的学校：先 `inspect`，再对照 [docs/selector.md](docs/selector.md) 里的「常见 CMS 配方」（博达、表格布局、WordPress、DedeCMS 等）。
 

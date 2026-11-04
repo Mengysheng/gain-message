@@ -9,5 +9,6 @@ tmp/
 
 # out/latest.md 和 out/archive/ 是刻意提交的：Actions 里作为汇总存档
 *.log
+*.tgz
 .DS_Store
 Thumbs.db

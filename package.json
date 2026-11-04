@@ -42,13 +42,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/USER/notice-radar.git"
+    "url": "git+https://github.com/Mengysheng/gain-message.git"
   },
   "bugs": {
-    "url": "https://github.com/USER/notice-radar/issues"
+    "url": "https://github.com/Mengysheng/gain-message/issues"
   },
-  "homepage": "https://github.com/USER/notice-radar#readme",
-  "author": "",
+  "homepage": "https://github.com/Mengysheng/gain-message#readme",
+  "author": "Mengysheng",
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.2.0",

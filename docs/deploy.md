@@ -11,7 +11,7 @@ git init
 git add .
 git commit -m "init: notice-radar"
 git branch -M main
-git remote add origin https://github.com/<你的用户名>/notice-radar.git
+git remote add origin https://github.com/Mengysheng/gain-message.git
 git push -u origin main
 ```
 

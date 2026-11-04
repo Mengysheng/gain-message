@@ -20,17 +20,21 @@ git init
 git add .
 git commit -m "feat: 通告雷达 0.1.0"
 git branch -M main
-git remote add origin https://github.com/<你的用户名>/notice-radar.git
+git remote add origin https://github.com/Mengysheng/gain-message.git
 git push -u origin main
 ```
 
 建议先建 **Private** 仓库跑通 Actions，再改成 Public。
 
-## 3. 把占位符换成你的仓库地址
+## 3. 确认仓库地址已填好
 
-- `package.json` → `repository` / `bugs` / `homepage` 里的 `USER`
-- `README.md` → 顶部注释掉的 CI 徽章，把 `USER` 换掉并取消注释
-- `CHANGELOG.md` → 不用改
+仓库地址已经写进这些地方，换仓库名/用户名时一起改：
+
+- `package.json` → `repository` / `bugs` / `homepage`（现在是 `Mengysheng/gain-message`）
+- `README.md` → 顶部两个 Actions 徽章
+- `docs/deploy.md` → 推送命令里的 remote
+
+`CHANGELOG.md` 不用改。
 
 ## 4. 仓库设置
 
@@ -66,8 +70,11 @@ git push origin v0.1.0
 
 ```bash
 npm login
+npm view notice-radar version     # 先看名字有没有被占用
 npm publish --access public
 ```
+
+如果 `notice-radar` 已被占用，把 `package.json` 的 `name` 改成 `gain-message`（或加作用域 `@mengysheng/notice-radar`）再发。
 
 `files` 字段已经配好了（只发 `src/`、`docs/`、`examples/`、`config.example.yaml`、README、LICENSE），
 不会把测试和 CI 文件塞进包里。
