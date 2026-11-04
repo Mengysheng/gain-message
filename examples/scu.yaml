@@ -1,0 +1,50 @@
+# 四川大学（已实测，2026-11）
+# 用法：cp examples/scu.yaml config.yaml
+
+timezone: Asia/Shanghai
+
+keywords:
+  include:
+    - 交换
+    - 实习
+    - 选派        # 教务处的交换项目一般写作「关于选派本科生参加…」
+  exclude:
+    - 招标
+    - 中标
+  include_mode: any
+  match_in: title
+
+sites:
+  - name: 川大教务处·通知公告
+    url: https://jwc.scu.edu.cn/ssjgy.jsp?wbtreeid=1001
+    list:
+      item: "div.list li"
+      title: "a"
+      link: "a"
+      date: "span"
+
+  - name: 川大就业网·实习岗位
+    url: https://jy.scu.edu.cn/index/index/employjob.html?type=2
+    list:
+      item: "div#mycontent li"
+      title: "a"
+      link: "a"
+      date: "span.list1_time"
+
+  - name: 川大就业网·通知公告
+    url: https://jy.scu.edu.cn/index/index/newslist.html?data=MQ
+    list:
+      item: "div#mycontent li"
+      title: "a"
+      link: "a"
+      date: "span.list1_time"
+
+email:
+  enabled: false
+  to: [you@example.com]
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    secure: true
+    user: you@example.com
+    pass: ""

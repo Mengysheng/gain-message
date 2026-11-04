@@ -30,7 +30,9 @@ import { formatDateTime, log, logError, truncate } from './util.js';
 const HELP = `通告雷达 notice-radar
 
 用法：
+  node src/cli.js doctor [--smtp]           体检：配置能不能用、每个站点解析是否正常、日期覆盖率
   node src/cli.js inspect <url>            探测某个页面的列表选择器（配置新站点时用）
+  node src/cli.js demo [--out 文件]         离线演示：用自带的样例页面生成一封邮件预览，不联网
   node src/cli.js test [--site 名称]        只解析、只打印，不改状态、不发邮件
   node src/cli.js run [选项]                正式检查：抓取 → 匹配 → 发邮件 / 写汇总 → 存状态
   node src/cli.js check-smtp               用当前配置验证邮箱能否登录（会真连服务器）
@@ -42,11 +44,13 @@ run 的选项：
   --init           把当前列表里的条目全部标记为已读，不推送（首次订阅想从零开始时用）
   --site <名称>     只跑指定站点（可多次）
   --strict         有站点抓取失败时以退出码 2 结束（让 GitHub Actions 变红）
+  --preview <文件>  把邮件渲染成 HTML 存下来，方便在浏览器看效果
   --verbose        打印每条条目的匹配详情
 
 通用选项：
   --config <路径>   配置文件，默认 config.yaml
   --limit <数字>    test 命令最多打印多少条
+  --json            test / doctor 输出 JSON（方便脚本处理）
   -h, --help       显示帮助
 `;
 
@@ -227,33 +231,199 @@ async function cmdTest(args) {
   const state = emptyState(); // 用空 state，保证每条都展示
   const limit = Number(args.flags.limit || 20);
   const sites = config.sites.filter((s) => !args.sites.length || args.sites.includes(s.name));
-
-  let totalItems = 0;
-  let totalHits = 0;
+  const json = Boolean(args.flags.json);
+  const report = [];
 
   for (const site of sites) {
-    console.log(`\n== ${site.name} ==`);
     const siteUrls = Array.isArray(site.urls) && site.urls.length ? site.urls : [site.url];
-    for (const siteUrl of siteUrls) console.log(`   ${siteUrl}`);
+    const entry = { name: site.name, urls: siteUrls, ok: true, items: 0, hits: 0, rows: [], error: null };
+
+    if (!json) {
+      console.log(`\n== ${site.name} ==`);
+      for (const siteUrl of siteUrls) console.log(`   ${siteUrl}`);
+    }
+
     try {
       const result = await prepareSite(config, site, state, { withDetail: true });
-      totalItems += result.candidates.length;
-      totalHits += result.matches.length;
-      console.log(`   解析 ${result.candidates.length} 条，命中 ${result.matches.length} 条`);
-      console.log(`   选择器：item="${site.list.item}"`);
-      for (const item of result.candidates.slice(0, limit)) {
-        const hit = result.matches.find((m) => m.url === item.url);
-        printItemLine(item, hit ? '✓' : '·');
+      entry.items = result.candidates.length;
+      entry.hits = result.matches.length;
+      entry.rows = result.candidates.slice(0, limit).map((item) => ({
+        title: item.title,
+        url: item.url,
+        date: item.date,
+        hit: result.matches.some((m) => m.url === item.url),
+      }));
+
+      if (!json) {
+        console.log(`   解析 ${result.candidates.length} 条，命中 ${result.matches.length} 条`);
+        console.log(`   选择器：item="${site.list.item}"`);
+        for (const item of result.candidates.slice(0, limit)) {
+          const hit = result.matches.find((m) => m.url === item.url);
+          printItemLine(item, hit ? '✓' : '·');
+        }
+        if (result.candidates.length > limit) {
+          console.log(`   …还有 ${result.candidates.length - limit} 条（--limit 可以多打一些）`);
+        }
       }
-      if (result.candidates.length > limit) console.log(`   …还有 ${result.candidates.length - limit} 条`);
     } catch (error) {
-      console.log(`   ✗ 失败：${error.message}`);
+      entry.ok = false;
+      entry.error = error.message;
+      if (!json) console.log(`   ✗ 失败：${error.message}`);
       process.exitCode = 1;
+    }
+    report.push(entry);
+  }
+
+  if (json) {
+    console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  const totalItems = report.reduce((sum, r) => sum + r.items, 0);
+  const totalHits = report.reduce((sum, r) => sum + r.hits, 0);
+  console.log(`\n合计：解析 ${totalItems} 条，命中 ${totalHits} 条`);
+  console.log('（test 模式不改状态、不发邮件；确认无误后跑 node src/cli.js run）');
+}
+
+async function cmdDoctor(args) {
+  const config = requireConfig(args);
+  const sites = config.sites.filter((s) => !args.sites.length || args.sites.includes(s.name));
+  const json = Boolean(args.flags.json);
+  const report = [];
+  let failed = 0;
+
+  if (!json) {
+    console.log(`配置：${path.resolve(args.flags.config || 'config.yaml')}`);
+    console.log(`站点：${sites.length} 个｜关键词：${(config.keywords?.include || []).join(' / ') || '（无）'}`);
+  }
+
+  for (const site of sites) {
+    const siteUrls = Array.isArray(site.urls) && site.urls.length ? site.urls : [site.url];
+    const entry = {
+      name: site.name,
+      urls: siteUrls,
+      ok: false,
+      items: 0,
+      hits: 0,
+      dateCoverage: 0,
+      warnings: [],
+      samples: [],
+      error: null,
+    };
+
+    if (!json) console.log(`\n检查 ${site.name} …`);
+
+    try {
+      const result = await prepareSite(config, site, emptyState(), { withDetail: false });
+      const items = result.candidates;
+      const dated = items.filter((item) => item.date).length;
+
+      entry.ok = true;
+      entry.items = items.length;
+      entry.hits = result.matches.length;
+      entry.dateCoverage = items.length ? Number((dated / items.length).toFixed(2)) : 0;
+      entry.samples = items.slice(0, 3).map((item) => `${item.date || '无日期'}  ${item.title}`);
+
+      if (items.length < 3) entry.warnings.push('解析到的条目少于 3 条，确认这个页面是不是列表页');
+      if (entry.dateCoverage < 0.5) {
+        entry.warnings.push(`只有 ${Math.round(entry.dateCoverage * 100)}% 的条目能识别日期，建议补 list.date 选择器`);
+      }
+      if (result.matches.length === 0) {
+        entry.warnings.push('当前关键词规则下 0 命中（可能只是最近没有相关通告，不一定是配置错）');
+      }
+      if (items.some((item) => /^https?:\/\//.test(item.url) === false)) {
+        entry.warnings.push('有条目链接没能补全成绝对地址，检查 list.link 选择器');
+      }
+    } catch (error) {
+      entry.error = error.message;
+      failed += 1;
+    }
+    report.push(entry);
+
+    if (!json) {
+      if (entry.ok) {
+        console.log('✓ 解析正常');
+        console.log(`   ${entry.items} 条，日期覆盖 ${Math.round(entry.dateCoverage * 100)}%，命中 ${entry.hits} 条`);
+        for (const sample of entry.samples) console.log(`   · ${sample}`);
+      } else {
+        console.log('✗ 解析失败');
+        console.log(`   ${entry.error}`);
+      }
+      for (const warning of entry.warnings) console.log(`   ⚠ ${warning}`);
     }
   }
 
-  console.log(`\n合计：解析 ${totalItems} 条，命中 ${totalHits} 条`);
-  console.log('（test 模式不改状态、不发邮件；确认无误后跑 node src/cli.js run）');
+  if (args.flags.smtp) {
+    try {
+      assertEmailConfig(config);
+      await verifySmtp(config);
+      report.push({ name: 'SMTP', ok: true, warnings: [], samples: [`收件人：${(config.email.to || []).join(', ')}`] });
+      if (!json) console.log(`\n✓ SMTP 登录成功，收件人：${(config.email.to || []).join(', ')}`);
+    } catch (error) {
+      report.push({ name: 'SMTP', ok: false, error: error.message, warnings: [], samples: [] });
+      failed += 1;
+      if (!json) console.log(`\n✗ SMTP：${error.message}`);
+    }
+  }
+
+  if (json) {
+    console.log(JSON.stringify(report, null, 2));
+    process.exitCode = failed ? 2 : 0;
+    return;
+  }
+
+  console.log('\n---------- 体检结论 ----------');
+  const okCount = report.filter((entry) => entry.ok && entry.name !== 'SMTP').length;
+  console.log(`${okCount}/${sites.length} 个站点解析正常${failed ? `，${failed} 项需要处理` : ''}`);
+  if (failed) {
+    console.log('解析失败的：先用 inspect 重新生成选择器，见 docs/selector.md');
+    process.exitCode = 2;
+  } else {
+    console.log('下一步：node src/cli.js run --dry-run --no-email --preview out/preview.html');
+  }
+}
+
+async function cmdDemo(args) {
+  const demoDir = path.resolve('examples', 'demo');
+  const configPath = path.join(demoDir, 'demo.yaml');
+  const htmlPath = path.join(demoDir, 'list.html');
+  if (!fs.existsSync(configPath) || !fs.existsSync(htmlPath)) {
+    throw new Error(`找不到演示文件：${demoDir}（是不是把 examples/ 删了？）`);
+  }
+
+  const config = loadConfig(configPath);
+  const site = config.sites[0];
+  const html = fs.readFileSync(htmlPath, 'utf8');
+  const items = parseList(html, site, site.url);
+  const rules = compileRules(config.keywords, site.keywords);
+
+  const matched = items
+    .map((item) => {
+      const result = matchItem(item, rules);
+      return { ...item, keywords: result.keywords, hit: result.hit };
+    })
+    .filter((item) => item.hit)
+    .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+  const generatedAt = formatDateTime(new Date(), config.timezone);
+  const groups = matched.length ? [{ name: site.name, url: site.url, items: matched }] : [];
+  const html2 = renderDigest({
+    groups,
+    generatedAt: `${generatedAt}（离线演示数据）`,
+    siteCount: 1,
+    errors: [],
+    timezone: config.timezone,
+  });
+
+  const target = path.resolve(String(args.flags.out || path.join(config.export?.dir || 'out', 'demo.html')));
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, html2, 'utf8');
+
+  console.log(`演示站点：${site.name}`);
+  console.log(`解析 ${items.length} 条，命中 ${matched.length} 条（关键词：${(config.keywords?.include || []).join(' / ')}）`);
+  for (const item of matched) console.log(`  ✓ ${item.date || '----------'}  ${truncate(item.title, 40)}  命中：${item.keywords.join(' / ')}`);
+  console.log(`\n邮件预览已写入：${target}`);
+  console.log('用浏览器打开看看效果；这个命令不联网、不发信，只证明流程是通的。');
 }
 
 async function cmdCheckSmtp(args) {
@@ -439,6 +609,8 @@ async function main() {
 
   try {
     if (command === 'inspect') return await cmdInspect(args);
+    if (command === 'doctor') return await cmdDoctor(args);
+    if (command === 'demo') return await cmdDemo(args);
     if (command === 'test') return await cmdTest(args);
     if (command === 'run') return await cmdRun(args);
     if (command === 'check-smtp') return await cmdCheckSmtp(args);

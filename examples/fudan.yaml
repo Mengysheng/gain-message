@@ -1,0 +1,39 @@
+# 复旦大学教务处（已实测，2026-11）
+# 注意：复旦的详情页是 JS 渲染的，detail 抓不到正文，只能标题匹配
+# 用法：cp examples/fudan.yaml config.yaml
+
+timezone: Asia/Shanghai
+
+keywords:
+  include:
+    - 推免
+    - 保研
+    - 选课
+    - 学分
+    - 考试
+  exclude:
+    - 招标
+    - 中标
+  include_mode: any
+  match_in: title
+
+sites:
+  - name: 复旦教务处·通知公告
+    url: https://jwc.fudan.edu.cn/9397/list.htm
+    list:
+      item: "table.wp_article_list_table tr"
+      title: "a"
+      link: "a"
+      date: "td.ti"
+    detail:
+      enabled: false
+
+email:
+  enabled: false
+  to: [you@example.com]
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    secure: true
+    user: you@example.com
+    pass: ""

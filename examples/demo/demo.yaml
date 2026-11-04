@@ -1,0 +1,24 @@
+# 离线演示用的配置：不联网、不发信，只走「解析 → 匹配 → 渲染邮件」这条链路
+# 运行：node src/cli.js demo
+
+sites:
+  - name: 示例大学·教务处
+    url: https://example.edu.cn/notice
+    list:
+      item: "ul.notice-list li"
+      title: "a"
+      link: "a"
+      date: "span.date"
+
+keywords:
+  include:
+    - 交换
+    - 实习
+    - 竞赛
+
+email:
+  enabled: false
+
+export:
+  enabled: true
+  dir: out

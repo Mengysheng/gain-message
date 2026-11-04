@@ -1,0 +1,43 @@
+name: 求一个学校的配置
+description: 想让项目支持你的学校，但选择器调不出来
+labels: [config]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        开 issue 之前，先看仓库里的 `docs/selector.md`「常见 CMS 配方」一节，
+        多数学校能在里面找到对应结构。
+
+        如果还是不行，把下面的信息填了，我或其他人可以照着复现。
+  - type: input
+    id: school
+    attributes:
+      label: 学校 + 栏目
+      placeholder: XX 大学 教务处 通知公告
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: 列表页 URL
+      description: 只列通告的那个页面，不是首页
+      placeholder: https://...
+    validations:
+      required: true
+  - type: input
+    id: keywords
+    attributes:
+      label: 想盯的关键词
+      placeholder: 推免、夏令营、交换
+  - type: textarea
+    id: tried
+    attributes:
+      label: 已经试过什么
+      description: inspect 的输出、你写过的选择器、报错信息
+      render: text
+  - type: textarea
+    id: html
+    attributes:
+      label: 一条通告的 HTML 片段（可选）
+      description: 在列表页 F12 选中一条，Copy outerHTML 贴上；没有也行
+      render: html

@@ -1,0 +1,35 @@
+# 武汉大学 通知公告（已实测，2026-11）
+# 表格布局：div.table 里一行一条，日期在第 3 列
+# 用法：cp examples/whu.yaml config.yaml
+
+timezone: Asia/Shanghai
+
+keywords:
+  include:
+    - 奖学金
+    - 推免
+    - 讲座
+  exclude:
+    - 招标
+    - 中标
+  include_mode: any
+  match_in: title
+
+sites:
+  - name: 武大·通知公告
+    url: https://www.whu.edu.cn/tzgg.htm
+    list:
+      item: "div.table tr"
+      title: "a"
+      link: "a"
+      date: "td:nth-child(3)"
+
+email:
+  enabled: false
+  to: [you@example.com]
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    secure: true
+    user: you@example.com
+    pass: ""

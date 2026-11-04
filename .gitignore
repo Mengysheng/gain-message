@@ -1,11 +1,13 @@
 node_modules/
 .env
 
-# 本地预览文件，不需要进仓库
+# 本地预览 / 演示产物，不需要进仓库
 out/preview.html
 out/preview.png
+out/demo.html
 tmp/
 
+# out/latest.md 和 out/archive/ 是刻意提交的：Actions 里作为汇总存档
 *.log
 .DS_Store
 Thumbs.db

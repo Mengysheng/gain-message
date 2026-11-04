@@ -1,7 +1,7 @@
 {
   "name": "notice-radar",
-  "version": "1.0.0",
-  "description": "按关键词监控学校官网/公告栏的新通告，命中后邮件汇总推送",
+  "version": "0.1.0",
+  "description": "按关键词监控学校官网新通告，去重后邮件汇总｜Keyword-filtered notice monitor for university notice boards, with email digest",
   "type": "module",
   "main": "src/cli.js",
   "bin": {
@@ -12,6 +12,8 @@
   },
   "scripts": {
     "test": "node --test",
+    "doctor": "node src/cli.js doctor",
+    "demo": "node src/cli.js demo",
     "inspect": "node src/cli.js inspect",
     "check": "node src/cli.js test",
     "run": "node src/cli.js run",
@@ -20,11 +22,33 @@
   },
   "keywords": [
     "monitor",
-    "crawler",
-    "rss",
+    "notice",
+    "university",
     "email",
-    "university"
+    "digest",
+    "scraper",
+    "crawler",
+    "school",
+    "notification"
   ],
+  "files": [
+    "src",
+    "docs",
+    "examples",
+    "config.example.yaml",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/USER/notice-radar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/USER/notice-radar/issues"
+  },
+  "homepage": "https://github.com/USER/notice-radar#readme",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "cheerio": "^1.2.0",

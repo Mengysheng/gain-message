@@ -1,0 +1,58 @@
+name: Bug 报告
+description: 抓不到、推错了、报错、邮件收不到
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        先跑一下体检，把输出贴上来，能省很多来回：
+
+        ```bash
+        node src/cli.js doctor
+        ```
+  - type: input
+    id: env
+    attributes:
+      label: 运行环境
+      description: 运行方式 + Node 版本
+      placeholder: GitHub Actions / 本地 Windows Node 22
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: doctor 输出
+      description: 直接粘贴即可，注意把邮箱等隐私信息打码
+      render: shell
+    validations:
+      required: true
+  - type: input
+    id: site
+    attributes:
+      label: 出问题的站点
+      description: 公开页面 URL，以及对应的 name
+      placeholder: https://jwc.xxx.edu.cn/notice.htm
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期 vs 实际
+      placeholder: |
+        预期：抓到 15 条，命中 2 条
+        实际：抓到 0 条，报「没有解析到任何条目」
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: 相关配置
+      description: 只贴 sites 里出问题的那一段，邮箱密码不要贴
+      render: yaml
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 自查
+      options:
+        - label: 已经跑过 `node src/cli.js inspect <url>`
+        - label: 已确认页面源码里能搜到通告标题（不是 JS 渲染）

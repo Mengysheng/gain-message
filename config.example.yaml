@@ -1,0 +1,102 @@
+# ============================================================
+# 通告雷达 · 配置模板
+#
+# 用法：
+#   cp config.example.yaml config.yaml
+#   改 sites / keywords / email 三块，然后：
+#   node src/cli.js doctor          # 体检
+#   node src/cli.js run --dry-run --no-email --preview out/preview.html
+#
+# 选择器不会写？  node src/cli.js inspect "https://你的学校/通知列表页"
+# 更多说明：docs/selector.md
+# ============================================================
+
+timezone: Asia/Shanghai
+state_file: state/state.json
+retention_days: 120
+
+request:
+  timeout: 20000      # 单次请求超时（毫秒）
+  retries: 2          # 失败重试次数
+  concurrency: 3      # 抓详情页时的并发数
+
+# ------------------------------------------------------------
+# 关键词（全局默认，site 里还能叠加自己的）
+#   include      子串匹配，命中任意一个就推
+#   include_mode all = 必须全部命中
+#   exclude      命中任意一个就丢弃
+#   regex        正则，和 include 是「或」的关系
+#   match_in     title（默认，快）或 title+content（连正文搜，慢）
+# ------------------------------------------------------------
+keywords:
+  include: []
+    # - 推免
+    # - 保研
+    # - 交换
+    # - 实习
+  exclude: []
+    # - 招聘
+    # - 招标
+  include_mode: any
+  match_in: title
+
+# ------------------------------------------------------------
+# 站点：一个学校的多个栏目 = 多个 site 条目
+#   url / urls          列表页地址，多页用 urls 数组
+#   list.item           每一条通告的选择器（整套配置里最关键的一行）
+#   list.title/link     条内的标题、链接选择器，一般就是 a
+#   list.date           日期选择器，能省则省（脚本会从整条文字里猜）
+#   detail.enabled      是否抓详情页拿摘要 / 用正文匹配
+#   max_items           每个站点最多取多少条
+# ------------------------------------------------------------
+sites:
+  - name: 示例大学·教务处通知
+    url: https://jwc.example.edu.cn/notice/list.htm
+    list:
+      item: "ul.news-list li"
+      title: "a"
+      link: "a"
+      date: "span.date"
+    detail:
+      enabled: false
+      content: "div.article-content"
+      max_chars: 1500
+
+  # 同一个站点的第二个栏目，复制这一段改 name/url 即可
+  # - name: 示例大学·研究生院
+  #   url: https://yjs.example.edu.cn/tzgg.htm
+  #   list:
+  #     item: "div.list tr"
+  #     title: "a"
+  #     link: "a"
+  #     date: "td:last-child"
+
+# 首次订阅某站点时，发最近 N 条做样例（silent = 不发）
+first_run:
+  mode: digest
+  limit: 5
+
+# ------------------------------------------------------------
+# 邮件：密码走环境变量，不要写死在文件里
+#   SMTP_HOST / SMTP_PORT / SMTP_SECURE / SMTP_USER / SMTP_PASS / MAIL_TO
+# 本地用 .env（见 .env.example），GitHub Actions 用 Secrets
+# ------------------------------------------------------------
+email:
+  enabled: false          # 只想先看效果就保持 false，用 --no-email
+  to:
+    - you@example.com
+  from_name: 通告雷达
+  subject_prefix: "[通告雷达]"
+  mode: digest            # digest=一封汇总 per_item=一条一封
+  send_on_error: true
+  smtp:
+    host: smtp.qq.com
+    port: 465
+    secure: true
+    user: you@example.com
+    pass: ""
+
+export:
+  enabled: true
+  dir: out
+  history: true

@@ -90,6 +90,16 @@ export function parseDate(text, now = new Date()) {
       if (isValidYmd(y, m, d)) return `${y}-${pad(m)}-${pad(d)}`;
     }
   }
+
+  // 相对时间：今天 / 昨天 / 前天 / 3天前 / 2小时前（只保留日期）
+  const ymd = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const shift = (days) => ymd(new Date(now.getFullYear(), now.getMonth(), now.getDate() - days));
+  if (/今天|刚刚/.test(s) || /\d+\s*(分钟|小时)前/.test(s)) return ymd(now);
+  if (/昨天/.test(s)) return shift(1);
+  if (/前天/.test(s)) return shift(2);
+  const daysAgo = s.match(/(\d+)\s*天前/);
+  if (daysAgo) return shift(Number(daysAgo[1]));
+
   return null;
 }
 

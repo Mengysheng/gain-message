@@ -45,6 +45,16 @@ test('parseDate：非法日期返回 null', () => {
   assert.equal(parseDate('没有日期'), null);
 });
 
+test('parseDate：相对时间', () => {
+  const now = new Date('2026-11-06T10:00:00');
+  assert.equal(parseDate('今天 09:30', now), '2026-11-06');
+  assert.equal(parseDate('刚刚更新', now), '2026-11-06');
+  assert.equal(parseDate('昨天', now), '2026-11-05');
+  assert.equal(parseDate('前天 14:00', now), '2026-11-04');
+  assert.equal(parseDate('3天前', now), '2026-11-03');
+  assert.equal(parseDate('2小时前', now), '2026-11-06');
+});
+
 test('normalizeForMatch：全角转半角并小写', () => {
   assert.equal(normalizeForMatch('ＡＢＣ　测试'), 'abc 测试');
 });
