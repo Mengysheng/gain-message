@@ -648,19 +648,24 @@ async function cmdRun(args) {
   for (const error of errors) console.log(`✗ ${error.name}：${error.message}`);
   if (!groups.length && !errors.length) console.log('没有需要推送的新通告。');
 
-  if (errors.length && args.flags.strict) {
+  // 部分站点失败属于正常波动：照常算成功，只在 Summary 里提示。
+  // 只有「全部站点都失败」才让工作流变红，避免一次网络抖动就报红。
+  if (errors.length) {
+    const allFailed = errors.length === sites.length;
     writeStepSummary(
       [
-        `## ⚠️ ${errors.length} 个站点抓取失败`,
+        allFailed ? '## ❌ 所有站点都抓取失败了' : `## ⚠️ ${errors.length} 个站点这次没抓到（其他站点正常）`,
         '',
         '| 站点 | 原因 |',
         '|---|---|',
         ...errors.map((error) => `| ${escapeCell(error.name)} | ${escapeCell(error.message)} |`),
         '',
-        '多半是页面改版导致选择器失效：本地跑 `node src/cli.js inspect <url>` 重新生成选择器，改 `config.yaml` 后重新推送。',
+        allFailed
+          ? '多半是网络问题或页面改版。偶发可等下次；持续失败就跑 `node src/cli.js inspect <url>` 重新生成选择器。'
+          : '这些站点本次跳过了，其他站点的推送不受影响。偶发失败下次会自动补上（去重状态没标记它们）。',
       ].join('\n'),
     );
-    process.exitCode = 2;
+    if (args.flags.strict && allFailed) process.exitCode = 2;
   }
 }
 
