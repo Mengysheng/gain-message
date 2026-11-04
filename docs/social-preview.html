@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1280px; height: 640px; overflow: hidden;
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #14532d 100%);
+      color: #e5e7eb; display: flex; align-items: center; justify-content: space-between;
+      padding: 0 72px;
+    }
+    .left { width: 600px; }
+    .kicker { font-size: 15px; letter-spacing: 2px; color: #7dd3fc; margin-bottom: 18px; }
+    h1 { font-size: 54px; line-height: 1.15; color: #fff; }
+    h1 span { color: #86efac; }
+    p.desc { margin-top: 20px; font-size: 20px; line-height: 1.65; color: #cbd5e1; }
+    .tags { margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap; }
+    .tag {
+      font-size: 14px; padding: 6px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18); color: #e2e8f0;
+    }
+    .right { width: 470px; }
+    .card {
+      background: #fff; border-radius: 14px; padding: 20px 22px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.45); color: #1f2328;
+    }
+    .card .head { display: flex; justify-content: space-between; align-items: flex-start; }
+    .card .ttl { font-size: 15px; font-weight: 700; }
+    .card .sub { font-size: 11px; color: #6b7280; margin-top: 4px; }
+    .card .num { font-size: 30px; font-weight: 800; color: #1a5fb4; line-height: 1; }
+    .card .numlabel { font-size: 10px; color: #6b7280; text-align: right; }
+    .site { margin-top: 16px; }
+    .sitename { font-size: 12px; font-weight: 700; color: #374151; }
+    .sitename em { font-style: normal; color: #9ca3af; font-weight: 400; margin-left: 6px; }
+    .item { padding: 9px 0; border-bottom: 1px solid #eceef1; }
+    .item:last-child { border-bottom: 0; }
+    .item .t { font-size: 13px; font-weight: 600; }
+    .item .m { margin-top: 4px; font-size: 10px; }
+    .chip { display: inline-block; padding: 1px 7px; border-radius: 9px; background: #f1f3f5; color: #6b7280; margin-right: 6px; }
+    .chip.hit { background: #e6f4f1; color: #0f766e; }
+    mark { background: #fff3cd; color: #7a4b00; padding: 0 2px; border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="left">
+    <div class="kicker">GITHUB ACTIONS · NODE.JS · ZERO SERVER</div>
+    <h1>通告雷达<br /><span>notice-radar</span></h1>
+    <p class="desc">按关键词盯学校官网的通告栏，<br />只把命中关键词的新通告汇总成一封邮件。</p>
+    <div class="tags">
+      <span class="tag">关键词过滤</span>
+      <span class="tag">按条目去重</span>
+      <span class="tag">邮件汇总</span>
+      <span class="tag">零成本定时</span>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="card">
+      <div class="head">
+        <div>
+          <div class="ttl">通告雷达 · 新通告汇总</div>
+          <div class="sub">2026-11-04 08:00（Asia/Shanghai）</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="num">16</div>
+          <div class="numlabel">条命中</div>
+        </div>
+      </div>
+
+      <div class="site">
+        <div class="sitename">川大教务处·通知公告<em>2 条命中</em></div>
+        <div class="item">
+          <div class="t">关于<mark>选派</mark>本科生参加“大川视界”2027年寒假…</div>
+          <div class="m"><span class="chip">2026-11-04</span><span class="chip hit">命中：选派</span></div>
+        </div>
+        <div class="item">
+          <div class="t">关于 2026“AI + 教育”创新应用技能大赛公示</div>
+          <div class="m"><span class="chip">2026-11-03</span></div>
+        </div>
+      </div>
+
+      <div class="site">
+        <div class="sitename">川大就业网·实习岗位<em>14 条命中</em></div>
+        <div class="item">
+          <div class="t">综合研究<mark>实习</mark>生【成都市经济发展研究院】</div>
+          <div class="m"><span class="chip">2026-11-03</span><span class="chip hit">命中：实习</span></div>
+        </div>
+        <div class="item">
+          <div class="t">算法<mark>实习</mark>生【宁波频泰光电科技有限公司】</div>
+          <div class="m"><span class="chip">2026-11-03</span><span class="chip hit">命中：实习</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

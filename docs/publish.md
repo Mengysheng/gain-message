@@ -43,7 +43,7 @@ git push -u origin main
 | Description | 按关键词监控学校官网通告，去重后邮件汇总 · Keyword-based notice monitor for university sites |
 | Website | 留空即可 |
 | Topics | `monitor` `notice` `university` `email` `digest` `github-actions` `nodejs` `crawler` `notification` `rss` |
-| Social preview | 上传 `docs/preview.png`（Settings → Social preview） |
+| Social preview | 上传 `docs/social-preview.png`（1280×640 横版，专为 GitHub 社交预览做的） |
 
 Topics 里放 `university`、`notice` 这类词，别人搜「学校 通知 监控」时才找得到。
 
