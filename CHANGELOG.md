@@ -2,6 +2,24 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.1.1] - 2026-11-04
+
+### 新增
+
+- **抓取代理**：`site.proxy` / `FETCH_PROXY` / `--proxy`，解决“本地能抓、GitHub Actions 报 403”的机房 IP 拦截问题；附 Cloudflare Worker 实现（`examples/cloudflare-worker.js`）与 [docs/proxy.md](docs/proxy.md)
+- GitHub Actions 失败时自动写 **Job Summary**，直接给出原因和修复步骤，不用翻日志
+- 工作流增加 Secrets 预检查，缺哪个 Secret 直接点名
+
+### 变更
+
+- `actions/checkout`、`actions/setup-node` 升级到 v5，消除 Node 20 弃用警告
+- runner 固定 `ubuntu-24.04`，CI 矩阵改为 Node 22 / 24
+- 配置 Dependabot：月度分组升级，major 版本不自动提 PR
+
+### 测试
+
+- 单测从 38 增至 47，新增代理地址构造、GBK 解码、代理链路端到端
+
 ## [0.1.0] - 2026-11-06
 
 首个可用版本。

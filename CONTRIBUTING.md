@@ -7,7 +7,7 @@
 ```bash
 git clone <repo> && cd notice-radar
 npm ci
-npm test          # 38 个单测，不需要网络
+npm test          # 47 个单测，不需要网络
 node src/cli.js demo
 ```
 

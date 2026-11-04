@@ -38,8 +38,21 @@ export function decodeBody(buffer, charset) {
 }
 
 /**
+ * 拼出真正要请求的地址。
+ * 站点被机房 IP 拦截时，可以配一个代理（见 docs/proxy.md），
+ * 模板里用 {url} 占位，例如 https://my-worker.workers.dev/?url={url}
+ */
+export function buildRequestUrl(url, proxy) {
+  if (!proxy) return url;
+  const template = String(proxy);
+  if (template.includes('{url}')) return template.replaceAll('{url}', encodeURIComponent(url));
+  return `${template}${encodeURIComponent(url)}`;
+}
+
+/**
  * 抓页面，带重试、超时、编码识别。
- * @returns {Promise<{html:string,status:number,finalUrl:string,charset:string}>}
+ * 走代理时 finalUrl 仍然返回原始地址，保证相对链接能正确补全。
+ * @returns {Promise<{html:string,status:number,finalUrl:string,charset:string,fetchedVia:string}>}
  */
 export async function fetchPage(url, options = {}) {
   const {
@@ -47,14 +60,17 @@ export async function fetchPage(url, options = {}) {
     timeout = 20000,
     retries = 2,
     charset = 'auto',
+    proxy = '',
   } = options;
+
+  const requestUrl = buildRequestUrl(url, proxy);
 
   let lastError;
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeout);
     try {
-      const res = await fetch(url, {
+      const res = await fetch(requestUrl, {
         redirect: 'follow',
         signal: controller.signal,
         headers: {
@@ -73,8 +89,9 @@ export async function fetchPage(url, options = {}) {
       return {
         html: decodeBody(buffer, enc),
         status: res.status,
-        finalUrl: res.url || url,
+        finalUrl: url,
         charset: enc,
+        fetchedVia: proxy ? requestUrl : url,
       };
     } catch (error) {
       lastError = error;

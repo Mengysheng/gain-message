@@ -47,6 +47,9 @@ sites:
   # 2) 就业网 · 实习岗位（只含实习，不含全职）
   - name: 川大就业网·实习岗位
     url: https://jy.scu.edu.cn/index/index/employjob.html?type=2
+    # 这个站点会拦截 GitHub Actions 的机房 IP（本地能抓、Actions 报 403）
+    # 部署 Cloudflare Worker 后取消下面这行注释，见 docs/proxy.md
+    # proxy: "https://notice-proxy.xxx.workers.dev/?url={url}"
     list:
       item: "div#mycontent li"
       title: "a"
@@ -58,6 +61,7 @@ sites:
   # 3) 就业网 · 通知公告（选调生、招聘会、就业政策等）
   - name: 川大就业网·通知公告
     url: https://jy.scu.edu.cn/index/index/newslist.html?data=MQ
+    # proxy: "https://notice-proxy.xxx.workers.dev/?url={url}"
     list:
       item: "div#mycontent li"
       title: "a"

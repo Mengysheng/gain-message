@@ -5,7 +5,7 @@
 按关键词盯着学校官网的通告栏，**只把命中关键词的新通告**汇总成一封邮件发给你。不用学校门户账号、不用浏览器插件、不用服务器——挂在 GitHub Actions 上零成本运行。
 
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933)
-![tests](https://img.shields.io/badge/tests-38%20passed-brightgreen)
+![tests](https://img.shields.io/badge/tests-47%20passed-brightgreen)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![deps](https://img.shields.io/badge/dependencies-4-brightgreen)
 
@@ -150,7 +150,7 @@ node src/cli.js doctor
 | `node src/cli.js test [--json]` | 只解析打印，不改状态不发信 |
 | `node src/cli.js run` | 正式跑：抓取 → 匹配 → 发信 → 存状态 |
 | `node src/cli.js check-smtp` | 验证 SMTP 能否登录 |
-| `npm test` | 38 个单元测试（不需要网络） |
+| `npm test` | 47 个单元测试（不需要网络） |
 
 `run` 常用开关：`--dry-run`（预览）、`--no-email`（只写 Markdown）、`--init`（把当前列表标记为已读）、`--site 名称`（只跑某站）、`--strict`（抓取失败时退出码 2，让 Actions 变红）、`--preview 文件`（导出邮件 HTML）。
 
@@ -179,6 +179,9 @@ node src/cli.js doctor
 
 **站点改版了？**
 会收到告警邮件；`inspect` 重新生成选择器即可。
+
+**本地能抓，GitHub Actions 上 403？**
+不是选择器问题，是站点拦截了机房 IP。用 `proxy` 走一层 Cloudflare Worker（免费，5 分钟）即可，见 [docs/proxy.md](docs/proxy.md)。
 
 更多排错见 [docs/deploy.md](docs/deploy.md#排障)。
 

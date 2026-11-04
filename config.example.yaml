@@ -65,6 +65,8 @@ sites:
   # 同一个站点的第二个栏目，复制这一段改 name/url 即可
   # - name: 示例大学·研究生院
   #   url: https://yjs.example.edu.cn/tzgg.htm
+  #   # 本地能抓但 GitHub Actions 报 403 时，用代理绕过机房 IP 拦截，见 docs/proxy.md
+  #   proxy: "https://notice-proxy.xxx.workers.dev/?url={url}"
   #   list:
   #     item: "div.list tr"
   #     title: "a"

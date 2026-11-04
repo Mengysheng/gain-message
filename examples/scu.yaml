@@ -25,6 +25,9 @@ sites:
 
   - name: 川大就业网·实习岗位
     url: https://jy.scu.edu.cn/index/index/employjob.html?type=2
+    # 就业网会拦 GitHub Actions 的机房 IP（本地 200 / Actions 403），
+    # 部署 docs/proxy.md 里的 Worker 后取消注释
+    # proxy: "https://notice-proxy.xxx.workers.dev/?url={url}"
     list:
       item: "div#mycontent li"
       title: "a"
@@ -33,6 +36,7 @@ sites:
 
   - name: 川大就业网·通知公告
     url: https://jy.scu.edu.cn/index/index/newslist.html?data=MQ
+    # proxy: "https://notice-proxy.xxx.workers.dev/?url={url}"
     list:
       item: "div#mycontent li"
       title: "a"

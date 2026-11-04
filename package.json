@@ -1,6 +1,6 @@
 {
   "name": "notice-radar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "按关键词监控学校官网新通告，去重后邮件汇总｜Keyword-filtered notice monitor for university notice boards, with email digest",
   "type": "module",
   "main": "src/cli.js",

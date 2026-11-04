@@ -98,7 +98,9 @@ async function cmdInspect(args) {
     process.exit(1);
   }
   log(`抓取 ${url} …`);
-  const page = await fetchPage(url, { charset: 'auto', timeout: 20000 });
+  const proxy = args.flags.proxy || process.env.FETCH_PROXY || '';
+  if (proxy) log(`走代理：${proxy}`);
+  const page = await fetchPage(url, { charset: 'auto', timeout: 20000, proxy });
   const ranked = inspectHtml(page.html, page.finalUrl || url);
   if (args.flags.json) {
     console.log(JSON.stringify(ranked, null, 2));
@@ -109,6 +111,7 @@ async function cmdInspect(args) {
 
 async function prepareSite(config, site, state, { withDetail = true } = {}) {
   const urls = Array.isArray(site.urls) && site.urls.length ? site.urls : [site.url];
+  const proxy = site.proxy || process.env.FETCH_PROXY || '';
   const collected = [];
   let pageUrl = urls[0];
   let lastError = null;
@@ -120,6 +123,7 @@ async function prepareSite(config, site, state, { withDetail = true } = {}) {
         timeout: config.request?.timeout ?? 20000,
         retries: config.request?.retries ?? 2,
         headers: site.headers || {},
+        proxy,
       });
       pageUrl = page.finalUrl || url;
       collected.push(...parseList(page.html, site, pageUrl));
@@ -169,6 +173,7 @@ async function prepareSite(config, site, state, { withDetail = true } = {}) {
           timeout: config.request?.timeout ?? 20000,
           retries: 1,
           headers: site.headers || {},
+          proxy,
         });
         item.content = parseDetail(detailPage.html, detailCfg.content, detailCfg.max_chars ?? 2000);
       } catch (error) {
@@ -195,6 +200,7 @@ async function prepareSite(config, site, state, { withDetail = true } = {}) {
           timeout: config.request?.timeout ?? 20000,
           retries: 1,
           headers: site.headers || {},
+          proxy,
         });
         item.excerpt = parseDetail(detailPage.html, detailCfg.content, detailCfg.max_chars ?? 2000);
       } catch {
