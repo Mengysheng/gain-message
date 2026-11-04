@@ -1,0 +1,46 @@
+# Dependabot 配置
+#
+# 策略：
+#   - 每月检查一次（学校通告这种项目不需要每周升级）
+#   - minor / patch 合成一个 PR，别一个依赖一个 PR
+#   - major 版本不自动提 PR：cheerio 的大版本会影响解析行为，必须手动升级并回归测试
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: monthly
+      time: "09:00"
+      timezone: Asia/Shanghai
+    open-pull-requests-limit: 3
+    labels:
+      - dependencies
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      npm-minor-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: "*"
+        update-types:
+          - version-update:semver-major
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    labels:
+      - dependencies
+      - ci
+    commit-message:
+      prefix: chore
+    groups:
+      actions:
+        patterns:
+          - "*"
