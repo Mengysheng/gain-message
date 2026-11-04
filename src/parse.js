@@ -30,6 +30,7 @@ export function parseList(html, site, pageUrl) {
 
   const items = [];
   const seen = new Set();
+  const seenTitles = new Set();
 
   nodes.each((_, el) => {
     const $item = $(el);
@@ -37,7 +38,7 @@ export function parseList(html, site, pageUrl) {
     const $title = pickNode($, $item, cfg.title) || ($item.is('a') ? $item : $item.find('a').first());
     const $link = pickNode($, $item, cfg.link) || ($item.is('a') ? $item : $item.find('a').first());
 
-    const rawTitle = normalizeText($title?.attr('title') || $title?.text() || '');
+    const rawTitle = normalizeText($title?.attr('title') || $title?.text() || '').replace(/^[#*·\s]+/, '');
     const href = $link?.attr('href') || '';
     const url = canonicalUrl(href, pageUrl);
 
@@ -50,7 +51,11 @@ export function parseList(html, site, pageUrl) {
 
     const key = url;
     if (seen.has(key)) return;
+    // 同一条通告常被同时发到多个栏目（链接不同、标题相同），在页面内先去一次重
+    const titleKey = rawTitle.replace(/[\s\p{P}\p{S}]/gu, '').toLowerCase();
+    if (titleKey && seenTitles.has(titleKey)) return;
     seen.add(key);
+    if (titleKey) seenTitles.add(titleKey);
 
     items.push({
       title: rawTitle,
