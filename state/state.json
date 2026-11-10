@@ -2,21 +2,21 @@
   "version": 1,
   "sites": {
     "川大教务处·通知公告": {
-      "lastRun": "2026-11-10T08:02:48.175Z",
+      "lastRun": "2026-11-10T12:24:59.999Z",
       "lastOk": "2026-11-09T16:59:19.766Z",
       "lastError": "抓取失败 https://jwc.scu.edu.cn/ssjgy.jsp?wbtreeid=1001：连接超时 [ETIMEDOUT]",
       "lastCount": 13
     },
     "川大就业网·实习岗位": {
-      "lastRun": "2026-11-10T08:02:48.175Z",
-      "lastError": "抓取失败 https://jy.scu.edu.cn/index/index/employjob.html?type=2：连接超时 [ETIMEDOUT]",
-      "lastOk": "2026-11-06T14:42:44.568Z",
+      "lastRun": "2026-11-10T12:24:59.999Z",
+      "lastError": null,
+      "lastOk": "2026-11-10T12:24:59.999Z",
       "lastCount": 20
     },
     "川大就业网·通知公告": {
-      "lastRun": "2026-11-10T08:02:48.175Z",
-      "lastError": "抓取失败 https://jy.scu.edu.cn/index/index/newslist.html?data=MQ：连接超时 [ETIMEDOUT]",
-      "lastOk": "2026-11-06T14:42:44.568Z",
+      "lastRun": "2026-11-10T12:24:59.999Z",
+      "lastError": null,
+      "lastOk": "2026-11-10T12:24:59.999Z",
       "lastCount": 17
     }
   },
@@ -117,28 +117,28 @@
       "title": "综合研究实习生【成都市经济发展研究院（成都市经济信息中心）】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.110Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#842538d978d1eca6": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKutSyynbddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "算法实习生【宁波频泰光电科技有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.110Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#bcc8e6c27fcee1c8": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKutSyyobddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "计算几何 / 三维网格算法实习生【宁波频泰光电科技有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.110Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#30ece5400dbca447": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZiKz7ays4bddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "嵌入式测试实习生【成都谐盈科技有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.110Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#9b250f71919c5dff": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKubbOspzddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
@@ -166,49 +166,49 @@
       "title": "财务管理部实习生【成都低空飞行服务有限责任公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#88c703a6e8fbb9af": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbWsnbddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "精细化工、胶体化学研发工程师【陕西星北能源科技有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#b4eb93dc4ddd6b53": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbWypzddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "法务合规部实习生【成都低空飞行服务有限责任公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#43c04153afe28b4a": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbSs4bddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "科伦总部-人力资源实习生（HRBP方向）【四川科伦药业股份有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#2dc698ee76f096e9": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbOspzddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "销售【山东君泰药业有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#313f90873e8ef2af": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbOsobddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "项目负责人【山东君泰药业有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-06T14:43:16.714Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#b877cdc772264999": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLbOypzddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "有机合成研究员【山东君泰药业有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-04T03:30:31.111Z",
-      "lastSeen": "2026-11-04T03:30:31.111Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#bcecd2d7f36264ca": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZmKlLaqsnbddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
@@ -257,98 +257,98 @@
       "title": "选调生｜青海省2027年度选调应届优秀大学毕业生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#c09c6261c1e5f1b4": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eJaKubayyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生 | 江苏省2027年应届优秀大学毕业生选调乡镇（街道）职位报名有关事项公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#8851f2e5d120d639": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eJaKz7bSyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生丨天津市2027年度定向招录选调生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#34ade08f1329f781": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eJaKz7ayyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生丨辽宁省 2027 年度选调应届优秀大学毕业生笔试通知",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#2757ee10c10b03b2": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eJWKuLbSyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜辽宁省2027年度选调应届优秀大学毕业生",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#0a755da4c9e59f00": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN-KzrbOyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜吉林省面向四川大学定向招录2027届选调生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#6b1e21ff567f9f5f": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN-Ku9SqyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜广西2027年定向四川大学招录选调生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#dfef74c204b8379c": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN-KutSqyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜江西省2027年度面向四川大学选调应届优秀大学毕业生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#b640d49237ae8ebc": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN6KlLbOyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生 | 线下宣讲 | 10月21日 | 江苏省2027年度面向四川大学应届优秀大学毕业生选调工作公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#a8ed946827ea4a94": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2K0dSuyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "“才汇东坡高校行”走进川大专场——彭山研学活动报名通知",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#da0cbe42bac2f0d0": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2K0dSqyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "关于办理2027届毕业生推荐表和协议书的通知",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#531dfd2db4cf7a23": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2K0NS6yGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜2027年度浙江省党政机关选调应届优秀大学毕业生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#7ecdbd1f49c7f93f": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2K0NSuyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜安徽省2027年度面向四川大学定向招录选调生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#64774440ddf90974": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2KutSyyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜重庆市面向四川大学定向选调 2027届急需紧缺专业应届优秀大学毕业生",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-04T03:30:31.439Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大就业网·通知公告#8ff33c69732e5cd2": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eN2KutSuyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
@@ -383,56 +383,56 @@
       "title": "商务运营实习【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.389Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#6a08066e7d0afb50": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9Susobddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "人力行政助理实习【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#5c7bb12e5fb8beb4": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9Suspzddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "市场销售实习【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#ca93a67c9f921037": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9SusmHddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "风险合规实习【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#139429b660c0e7e3": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9S2smHddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "科技研发实习生【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#91a9512ba4e3cdb7": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9S2sobddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "物流运营实习生【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·实习岗位#3312d3075587e522": {
       "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9Sus3bddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
       "title": "财务部实习生【中外运医疗科技（成都）有限公司】",
       "site": "川大就业网·实习岗位",
       "firstSeen": "2026-11-05T07:46:00.390Z",
-      "lastSeen": "2026-11-06T14:43:16.713Z"
+      "lastSeen": "2026-11-10T12:25:26.935Z"
     },
     "川大就业网·通知公告#2e09fcabddc39d46": {
       "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4eJaKlLbSyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
       "title": "选调生｜云南省2027年面向四川大学选调优秀毕业生公告",
       "site": "川大就业网·通知公告",
       "firstSeen": "2026-11-05T07:46:01.156Z",
-      "lastSeen": "2026-11-06T14:43:17.459Z"
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     },
     "川大教务处·通知公告#ed1696b43753e6b5": {
       "url": "https://jwc.scu.edu.cn/info/1021/10916.htm",
@@ -447,6 +447,34 @@
       "site": "川大教务处·通知公告",
       "firstSeen": "2026-11-09T16:59:31.920Z",
       "lastSeen": "2026-11-09T16:59:31.920Z"
+    },
+    "川大就业网·实习岗位#cc368a60dfea43eb": {
+      "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9S6yWHddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
+      "title": "数据产品与研究实习生【重庆沐晨人工智能科技有限公司】",
+      "site": "川大就业网·实习岗位",
+      "firstSeen": "2026-11-10T12:25:26.935Z",
+      "lastSeen": "2026-11-10T12:25:26.935Z"
+    },
+    "川大就业网·实习岗位#7d62324d61f909bb": {
+      "url": "https://jy.scu.edu.cn/index/index/employjobdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtLh5eZqKu9S6ynbddricp9CWi5qikaeWacSdqLqGfaK2w4iil5C4zNbGiL-E",
+      "title": "数据研发实习生【重庆沐晨人工智能科技有限公司】",
+      "site": "川大就业网·实习岗位",
+      "firstSeen": "2026-11-10T12:25:26.935Z",
+      "lastSeen": "2026-11-10T12:25:26.935Z"
+    },
+    "川大就业网·通知公告#7bc5d56eb0baec41": {
+      "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4iZiK0NTSyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
+      "title": "生物药生产基地开放日报名通知",
+      "site": "川大就业网·通知公告",
+      "firstSeen": "2026-11-10T12:25:27.381Z",
+      "lastSeen": "2026-11-10T12:25:27.381Z"
+    },
+    "川大就业网·通知公告#3d25d3cbab8b1c13": {
+      "url": "https://jy.scu.edu.cn/index/index/newsdetail.html?data=MDAwMDAwMDAwMJG6n3_Ed6imi4qQtbR4iZiK0NTOyGHRp7ugzc-GnZ2skMx9ZMN4gtKLipCwxKF0lZC5sq-0gqJv",
+      "title": "关于组织参加“才聚武汉·城就未来——2026百万学子武汉行”活动的通知",
+      "site": "川大就业网·通知公告",
+      "firstSeen": "2026-11-10T12:25:27.381Z",
+      "lastSeen": "2026-11-10T12:25:27.381Z"
     }
   }
 }
