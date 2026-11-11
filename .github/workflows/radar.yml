@@ -1,17 +1,20 @@
 name: notice-radar
 
-# GitHub 的 cron 用 UTC。北京时间 = UTC+8
+# 这个工作流现在只保留**手动触发**，定时交给本机任务（scripts/install-boot-task.ps1）。
 #
-# 为什么要跑这么勤：GitHub 的 schedule 触发并不准点（本仓库实测整体晚 6~8 小时），
-# 想「只在白天 9/12/15 点跑」是做不到的——设 01/04/07 UTC，实际会落到北京时间
-# 下午三点、晚上八点、半夜。与其猜时间，不如每两小时跑一次，靠次数换成功率。
+# 为什么停掉云端定时：
+#   1. GitHub 的 schedule 不准点，本仓库实测整体晚 6~8 小时，设 01/04/07 UTC 实际落在
+#      北京时间下午三点、晚上八点、半夜；
+#   2. 更要紧的是，从 GitHub 的机器（Azure）到川大校园网经常连 TCP 握手都超时，
+#      实测站点抓取成功率只有 ~20%，而本机是 100%；
+#   3. 本机任务和云端各有一份 state/state.json，两边同时跑会把同一条通告推两遍。
 #
-# 多跑不会多推：去重状态记着哪些通告已经发过，重复运行只会刷新 lastSeen。
-# 每 20 小时最多一封心跳，不用担心收件箱被刷屏。
+# 想恢复云端定时：把下面 schedule 两行取消注释即可（但请先停掉本机任务，
+# 否则同一条通告会重复推送）。
 on:
-  schedule:
-    - cron: '0 */2 * * *'
-  workflow_dispatch: # 也可以在网页上手动点一下立即运行
+  # schedule:
+  #   - cron: '0 */2 * * *'
+  workflow_dispatch: # 网页上手动点一下：settings → Actions → notice-radar → Run workflow
     inputs:
       mode:
         description: '运行模式：run=正常抓取；test-email=只发一封测试邮件（不抓取、不改状态）'

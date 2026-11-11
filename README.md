@@ -147,13 +147,21 @@ node src/cli.js doctor
 
 想加自己的学校：先 `inspect`，再对照 [docs/selector.md](docs/selector.md) 里的「常见 CMS 配方」（博达、表格布局、WordPress、DedeCMS 等）。
 
-## 部署到 GitHub Actions
+## 部署
+
+**推荐：本机计划任务**（云端到国内校园网经常连 TCP 握手都超时，本机才是稳的）
+
+```powershell
+.\scripts\install-boot-task.ps1 -RunNow     # 登录后自动跑一轮 + 之后每 2 小时一次
+```
+
+仓库根目录也有双击即用的 `安装计划任务.cmd` / `卸载计划任务.cmd`。详见 [docs/deploy.md](docs/deploy.md#windows-任务计划)。
+
+**备选：GitHub Actions**（不用开电脑，但抓取成功率约 20%）
 
 推到 GitHub 后加 6 个 Secrets（`SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` / `SMTP_USER` / `SMTP_PASS` / `MAIL_TO`），
-在 Actions 页面点一次 **Run workflow** 即可，之后**每 2 小时跑一次**。
-
-为什么不写死「每天 9/12/15 点」：GitHub 的 schedule 触发经常整体延后几小时（本仓库实测晚 6~8 小时），
-按点卡是做不到的，只能靠频次。多跑不会多推——去重状态记着哪些通告已经发过。
+在 Actions 页面点 **Run workflow**。工作流的定时触发默认是**注释掉的**——它和本机任务各有一份
+`state/state.json`，两边同时跑会把同一条通告推两遍。
 
 两个容易踩的点：
 

@@ -6,6 +6,9 @@ tmp/
 # 也避免仓库无限膨胀。需要在仓库里看汇总时，去 Actions 的 Artifacts 下载。
 out/
 
+# 本机跑的日志（scripts/run-local.ps1 写的）
+logs/
+
 *.log
 *.tgz
 .DS_Store

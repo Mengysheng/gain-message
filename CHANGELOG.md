@@ -2,6 +2,29 @@
 
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号遵循 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.2.1] - 2026-11-11
+
+给「云端走不通」准备的本地方案：一条命令注册成 Windows 计划任务。
+
+### 新增
+
+- `scripts/run-local.ps1`：本地跑一轮。加载 `.env` → 等网络就绪（开机后 Wi-Fi 没连上不会白跑）→
+  跑 `node src/cli.js run` → 写 `logs\radar-YYYY-MM-DD.log`；用 `logs\run.lock` 防重复启动，日志保留 30 天
+- `scripts/install-boot-task.ps1`：注册/卸载计划任务。默认**登录后延迟 60 秒跑一次 + 每 2 小时一次**，
+  不需要管理员权限；`-AtStartup` 换成开机触发，`-PushState` 让本地跑完把 `state/` 推回仓库
+
+### 变更
+
+- 工作流的 `schedule` 改为**注释状态**，只保留手动 `workflow_dispatch`：
+  定时交给本机任务，避免云端和本地各推一遍同一条通告
+- 默认用「登录时」而不是「开机启动」：计划任务在启动阶段以 SYSTEM 运行，而 Wi-Fi 凭据属于用户，
+  SYSTEM 上下文连不上 Wi-Fi，任务会白跑。有线网络/台式机再用 `-AtStartup`
+- 仓库根目录有两个双击即用的快捷方式：`安装计划任务.cmd` / `卸载计划任务.cmd`（`.ps1` 双击会被记事本打开）
+- 日志里 node 的输出会显式按 UTF-8 解码：PowerShell 5.1 默认按 GBK 解码子进程输出，
+  不处理的话中文全变「宸濆ぇ鏁欏姟」这种乱码
+- 两个脚本必须是 **UTF-8 with BOM**，否则 Windows PowerShell 5.1 会按 ANSI 解析，中文注释会让脚本报语法错
+- `.gitignore` 增加 `logs/`
+
 ## [0.2.0] - 2026-11-11
 
 针对「大部分时间都报抓取失败」做的一轮改造。根因是链路（GitHub 的机器连不上校园网），

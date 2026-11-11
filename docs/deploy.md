@@ -38,25 +38,24 @@ Private 仓库更稳妥（配置里可能带学校内部栏目地址），公开
 
 第一次运行会给每个站点发一封「订阅成功 + 最近 5 条样例」的邮件，确认解析正确。之后只推新增的命中条目。
 
-### 4. 改时间
+### 4. 改时间（默认已注释掉）
 
-GitHub 的 cron 是 **UTC**，北京时间 = UTC+8：
+`.github/workflows/radar.yml` 里的 `schedule` 现在是**注释状态**，工作流只在手动点 Run workflow 时跑。
+定时交给本机任务（见下文「Windows 任务计划」），原因有两条：云端抓取成功率约 20%，而且两边各有一份
+`state.json` 会把同一条通告推两遍。
+
+真要恢复云端定时，取消注释即可。GitHub 的 cron 是 **UTC**，北京时间 = UTC+8：
 
 | 北京时间 | cron |
 |---|---|
-| 每 2 小时（本仓库默认） | `0 */2 * * *` |
+| 每 2 小时 | `0 */2 * * *` |
 | 每天 09:00 | `0 1 * * *` |
 | 每天 12:00 | `0 4 * * *` |
-| 每天 15:00 | `0 7 * * *` |
 | 工作日 09:00 | `0 1 * * 1-5` |
-
-改 `.github/workflows/radar.yml` 里的 `schedule`。
 
 > **别指望 cron 准点。** GitHub 的 `schedule` 是尽力而为：整点高峰常延迟几分钟，
 > 但本仓库在 2026-11 实测到的偏差是**整体 6~8 小时**——设 UTC 01/04/07 点，
 > 实际落在北京时间 15:45 / 20:20 / 23:20，正好是跨境链路最差、最容易超时的时段。
-> 所以默认改成**每 2 小时跑一次**，靠次数换成功率；多跑不会多推，去重状态会挡住重复。
-> 如果只是想省钱/省请求，可以再加回固定次数，但要接受「今天可能一次都没跑准」。
 
 > **为什么白天更稳？** 实测：北京时间 11:30 三个站点全部能抓，19:59 和 20:48 全部超时——
 > GitHub 的机器（海外）到国内学校的跨境链路在晚间明显变差。频率高的话，晚上的失败会被白天的成功补上。
@@ -104,12 +103,35 @@ crontab -e
 
 ### Windows 任务计划
 
-1. 任务计划程序 → 创建基本任务 → 每天 08:00
-2. 操作：启动程序
-   - 程序：`C:\Program Files\nodejs\node.exe`
-   - 参数：`src\cli.js run`
-   - 起始于：`C:\path\to\notice-radar`
-3. 环境变量（SMTP_*）在「系统属性 → 环境变量」里设，或改用 `.env` + `--env-file-if-exists=.env`
+仓库里带好了两个脚本，不用在「任务计划程序」里手点：
+
+```powershell
+cd <仓库目录>
+copy .env.example .env        # 填 SMTP_HOST / SMTP_PORT / SMTP_SECURE / SMTP_USER / SMTP_PASS / MAIL_TO
+.\scripts\run-local.ps1 -DryRun                     # 先手动试跑一次（不发信、不写状态）
+.\scripts\install-boot-task.ps1 -RunNow             # 注册任务并立刻跑一次
+```
+
+`install-boot-task.ps1` 默认做的事：
+
+| 项 | 默认值 | 说明 |
+|---|---|---|
+| 触发 | **登录时 + 延迟 60s** | 不用「开机启动」：计划任务在启动阶段以 SYSTEM 身份运行，而 Wi-Fi 密码存在你的用户下，SYSTEM 连不上 Wi-Fi 会白跑。有线/台式机可以加 `-AtStartup` |
+| 重复 | 每 2 小时一次 | `-RepeatHours 0` = 只在登录时跑一遍 |
+| 状态 | 不推送 | 加 `-PushState` 会把 `state/` 提交回仓库（本地和 Actions 双跑时用它防重复推送） |
+| 日志 | `logs\radar-今天.log` | 保留 30 天；`run-local.ps1` 还会等网络就绪、避免两个实例同时跑 |
+| 权限 | 当前用户、Limited | **不需要管理员**，普通 PowerShell 就能注册 |
+
+卸载：`.\scripts\install-boot-task.ps1 -Uninstall`
+
+> ⚠️ 这两个 `.ps1` 必须保持 **UTF-8 with BOM**。Windows PowerShell 5.1 没有 BOM 时会按本地代码页（GBK）
+> 解析脚本，中文注释里的字节会吃掉引号，直接报「字符串缺少终止符」。改脚本请用 VS Code（右下角选
+> `UTF-8 with BOM`）或 `Out-File -Encoding utf8BOM`。
+
+> **做本地跑之前先决定 Actions 怎么办。** 两边各有自己的 `state/state.json`，
+> 同一条通告会被推两次。要么停掉 Actions 的定时（改 `.github/workflows/radar.yml`
+> 的 `on:` 只留 `workflow_dispatch`），要么给本地任务加 `-PushState`。
+
 
 ### Docker
 
