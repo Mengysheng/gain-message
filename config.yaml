@@ -8,9 +8,12 @@ state_file: state/state.json
 retention_days: 120
 
 request:
-  timeout: 20000
-  retries: 3          # 失败重试次数（网络抖动时按 1.5s / 6s / 13.5s 退避）
-  concurrency: 3
+  # 单次请求超时。GitHub Actions 到川大校园网的表现是「TCP 握手就超时」，
+  # 20s 只会让三个站点串起来白等五分钟，所以缩到 10s、用次数换成功率。
+  timeout: 10000
+  retries: 4          # 失败重试次数（1.5s / 6s / 13.5s / 24s 退避 + 随机抖动）
+  concurrency: 3      # 抓详情页时的并发
+  site_concurrency: 3 # 站点之间并行，别排队
 
 # ------------------------------------------------------------
 # 关键词：交换 / 实习
@@ -87,6 +90,19 @@ email:
   subject_prefix: "[通告雷达]"
   mode: digest
   send_on_error: true
+
+  # 告警降噪：以前只要有一个站点超时就发信，收件箱里几乎全是「抓取失败」。
+  # 现在同一个站点连续失败 3 次才发告警，偶发抖动只写在日志和 Job Summary 里。
+  error_alerts:
+    enabled: true
+    after_consecutive_failures: 3
+
+  # 心跳：超过 20 小时没发过任何邮件，就发一封「我还活着」+ 三个站点的状态。
+  # 这样「今天真的没新通告」和「脚本已经挂了一周」在收件箱里能区分开。
+  heartbeat:
+    enabled: true
+    min_interval_hours: 20
+
   smtp:
     host: smtp.qq.com
     port: 465

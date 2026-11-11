@@ -16,9 +16,10 @@ state_file: state/state.json
 retention_days: 120
 
 request:
-  timeout: 20000      # 单次请求超时（毫秒）
-  retries: 2          # 失败重试次数
+  timeout: 10000      # 单次请求超时（毫秒）。跨境链路差时，20s 只会白等，宁可短超时多试几次
+  retries: 4          # 失败重试次数（1.5s / 6s / 13.5s … 指数退避 + 随机抖动）
   concurrency: 3      # 抓详情页时的并发数
+  site_concurrency: 3 # 站点之间并行抓（串行会把整轮拖到几分钟）
 
 # ------------------------------------------------------------
 # 关键词（全局默认，site 里还能叠加自己的）
@@ -91,6 +92,19 @@ email:
   subject_prefix: "[通告雷达]"
   mode: digest            # digest=一封汇总 per_item=一条一封
   send_on_error: true
+
+  # 告警降噪：链路抖一下就发邮件，收件箱里会只剩「抓取失败」。
+  # 同一个站点连续失败到阈值才提醒；不想到此为止就把它设成 enabled: false（每次都发）。
+  error_alerts:
+    enabled: true
+    after_consecutive_failures: 3
+
+  # 心跳：这么久没发过信，就发一封「我还活着」+ 各站点状态。
+  # 没有它的话，「今天真的没消息」和「脚本已经死了一周」长得一模一样。
+  heartbeat:
+    enabled: true
+    min_interval_hours: 20
+
   smtp:
     host: smtp.qq.com
     port: 465

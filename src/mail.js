@@ -199,3 +199,109 @@ export async function verifySmtp(config) {
   await transport.verify();
   transport.close();
 }
+
+const STATUS = {
+  ok: { bg: '#e6f4f1', color: '#0f766e', text: '正常' },
+  warn: { bg: '#fff4e5', color: '#b45309', text: '连续失败' },
+  unknown: { bg: '#f1f3f5', color: '#6b7280', text: '还没成功过' },
+};
+
+function statusOf(row) {
+  if (row.ok) return STATUS.ok;
+  if (row.failStreak >= 2) return STATUS.warn;
+  return STATUS.unknown;
+}
+
+/**
+ * 心跳邮件：没有新通告时也发一封，证明「脚本还活着、链接还通」。
+ * 没有它的话，「今天真的没消息」和「脚本已经死了一周」在收件箱里长得一模一样。
+ */
+export function renderHeartbeat({ rows = [], generatedAt, timezone = 'Asia/Shanghai', intervalHours = 20 }) {
+  const okCount = rows.filter((row) => row.ok).length;
+  const badCount = rows.length - okCount;
+
+  const tableRows = rows
+    .map((row) => {
+      const st = statusOf(row);
+      const link = row.url
+        ? `<a href="${escapeHtml(row.url)}" style="color:${COLORS.accent};text-decoration:none;">${escapeHtml(row.name)}</a>`
+        : escapeHtml(row.name);
+      return `<tr>
+        <td style="padding:8px 0;border-bottom:1px solid ${COLORS.border};font-size:14px;">${link}</td>
+        <td align="center" style="padding:8px 0;border-bottom:1px solid ${COLORS.border};">${chip(st.bg, st.color, st.text)}</td>
+        <td align="right" style="padding:8px 0;border-bottom:1px solid ${COLORS.border};color:${COLORS.muted};font-size:12px;">${
+          row.lastOk ? escapeHtml(row.lastOk) : '—'
+        }</td>
+      </tr>`;
+    })
+    .join('');
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>通告雷达</title></head>
+<body style="margin:0;padding:0;background:${COLORS.bg};">
+  <div style="max-width:640px;margin:0 auto;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Hiragino Sans GB','Microsoft YaHei',sans-serif;">
+    <div style="background:${COLORS.card};border:1px solid ${COLORS.border};border-radius:12px;padding:22px 24px;">
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+        <tr>
+          <td valign="top">
+            <div style="font-size:18px;font-weight:700;color:${COLORS.text};">通告雷达 · 例行心跳</div>
+            <div style="margin-top:6px;color:${COLORS.muted};font-size:13px;">${escapeHtml(generatedAt)}（${escapeHtml(timezone)}）</div>
+            <div style="margin-top:2px;color:${COLORS.muted};font-size:12px;">每 ${intervalHours} 小时没发过信就报一次平安；改动关键词只需要改 config.yaml</div>
+          </td>
+          <td align="right" valign="top" width="96">
+            <div style="font-size:28px;font-weight:700;color:${badCount ? COLORS.error : COLORS.accent};line-height:1;">${okCount}/${rows.length}</div>
+            <div style="color:${COLORS.muted};font-size:12px;margin-top:4px;">站点正常</div>
+          </td>
+        </tr>
+      </table>
+
+      <div style="margin-top:22px;padding:14px;background:#f9fafb;border:1px solid ${COLORS.border};border-radius:8px;color:${COLORS.muted};font-size:13px;line-height:1.7;">
+        ${
+          badCount
+            ? `这次有 ${badCount} 个站点没抓到。跨境链路抖动很常见，偶发不用管；连续失败会在下一封告警里体现。`
+            : `这次 ${rows.length} 个站点都抓取正常，只是最近没有命中关键词的新通告 —— 所以除了这封心跳，不会推别的内容。`
+        }
+      </div>
+
+      <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:18px;">
+        <tr>
+          <td style="font-size:12px;color:${COLORS.muted};padding-bottom:4px;">站点</td>
+          <td align="center" style="font-size:12px;color:${COLORS.muted};padding-bottom:4px;">本次</td>
+          <td align="right" style="font-size:12px;color:${COLORS.muted};padding-bottom:4px;">上次成功</td>
+        </tr>
+        ${tableRows}
+      </table>
+    </div>
+    <div style="margin-top:14px;text-align:center;color:#9ca3af;font-size:12px;line-height:1.7;">
+      由 notice-radar 自动发送 · 不想收心跳就把 config.yaml 里 email.heartbeat.enabled 改成 false
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+export function renderHeartbeatText({ rows = [], generatedAt, intervalHours = 20 }) {
+  const okCount = rows.filter((row) => row.ok).length;
+  const lines = [
+    '通告雷达 · 例行心跳',
+    generatedAt,
+    `${okCount}/${rows.length} 个站点本次抓取正常`,
+    `（每 ${intervalHours} 小时没发过信就报一次平安）`,
+    '',
+  ];
+  for (const row of rows) {
+    const st = statusOf(row);
+    lines.push(`- ${row.name}：${st.text}${row.lastOk ? `，上次成功 ${row.lastOk}` : ''}`);
+    if (!row.ok && row.error) lines.push(`  ${row.error}`);
+  }
+  return lines.join('\n');
+}
+
+export function buildHeartbeatSubject(config, { okCount = 0, total = 0 } = {}) {
+  const prefix = config.email.subject_prefix || '[通告雷达]';
+  const bad = total - okCount;
+  return bad > 0
+    ? `${prefix} 心跳：${okCount}/${total} 个站点正常（${bad} 个没抓到）`
+    : `${prefix} 心跳：${total} 个站点都正常，无新通告`;
+}

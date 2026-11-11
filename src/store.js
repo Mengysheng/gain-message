@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { sha1 } from './util.js';
 
-const EMPTY = () => ({ version: 1, sites: {}, items: {} });
+const EMPTY = () => ({ version: 1, sites: {}, items: {}, meta: {} });
 
 export function emptyState() {
   return EMPTY();
@@ -16,6 +16,7 @@ export function loadState(file) {
       version: data.version || 1,
       sites: data.sites && typeof data.sites === 'object' ? data.sites : {},
       items: data.items && typeof data.items === 'object' ? data.items : {},
+      meta: data.meta && typeof data.meta === 'object' ? data.meta : {},
     };
   } catch {
     return emptyState();
@@ -70,4 +71,22 @@ export function pruneState(state, retentionDays = 120, now = Date.now()) {
 /** 站点是否第一次运行（决定要不要发一份“最近若干条”的样例） */
 export function isFirstRun(state, siteName) {
   return !state.sites[siteName]?.lastOk;
+}
+
+/**
+ * 记录一次成功 / 失败。
+ * failStreak 用来做告警降噪：链路抖一下不值得发邮件，连续失败才值得。
+ */
+export function recordSiteOk(state, siteName, patch = {}) {
+  touchSite(state, siteName, { ...patch, lastError: null, failStreak: 0 });
+}
+
+export function recordSiteFail(state, siteName, error, patch = {}) {
+  const prev = Number(state.sites[siteName]?.failStreak || 0);
+  touchSite(state, siteName, { ...patch, lastError: String(error), failStreak: prev + 1 });
+  return prev + 1;
+}
+
+export function failStreak(state, siteName) {
+  return Number(state.sites[siteName]?.failStreak || 0);
 }

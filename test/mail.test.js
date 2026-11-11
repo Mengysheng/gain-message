@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { renderDigest, renderDigestText, buildSubject } from '../src/mail.js';
+import { renderDigest, renderDigestText, buildSubject, renderHeartbeat, renderHeartbeatText, buildHeartbeatSubject } from '../src/mail.js';
 
 const config = { email: { subject_prefix: '[通告雷达]' } };
 
@@ -70,4 +70,41 @@ test('buildSubject：三种情况分别有合适标题', () => {
   assert.match(buildSubject(config, { hits: 3 }, ['A大学']), /3 条新通告/);
   assert.match(buildSubject(config, { hits: 0, samples: 5 }, ['A大学']), /订阅成功/);
   assert.match(buildSubject(config, { hits: 0, samples: 0 }, ['A大学']), /没有命中/);
+});
+
+const heartbeatRows = [
+  { name: 'A大学·教务处', url: 'https://a.edu.cn/list', ok: true, lastOk: '2026-11-11 09:00', failStreak: 0 },
+  {
+    name: 'B大学·就业网',
+    url: 'https://b.edu.cn/list',
+    ok: false,
+    lastOk: '2026-11-10 20:00',
+    failStreak: 4,
+    error: '抓取失败：连接超时 [ETIMEDOUT]',
+  },
+];
+
+test('renderHeartbeat：给出站点计数和每个站点的状态', () => {
+  const html = renderHeartbeat({ rows: heartbeatRows, generatedAt: '2026-11-11 12:00', intervalHours: 20 });
+  assert.match(html, />1\/2</, '左上角大数字是「正常站点数/总数」');
+  assert.match(html, /A大学·教务处/);
+  assert.match(html, /连续失败/);
+  assert.match(html, /2026-11-10 20:00/);
+});
+
+test('renderHeartbeat：全绿时说明「只是没有新通告」', () => {
+  const html = renderHeartbeat({ rows: [heartbeatRows[0]], generatedAt: 'x', intervalHours: 20 });
+  assert.match(html, /没有命中关键词的新通告/);
+  assert.doesNotMatch(html, /没抓到/);
+});
+
+test('renderHeartbeatText：纯文本带上失败原因', () => {
+  const text = renderHeartbeatText({ rows: heartbeatRows, generatedAt: 'x', intervalHours: 20 });
+  assert.match(text, /1\/2 个站点本次抓取正常/);
+  assert.match(text, /连接超时/);
+});
+
+test('buildHeartbeatSubject：有站点没抓到时要写明', () => {
+  assert.match(buildHeartbeatSubject(config, { okCount: 1, total: 2 }), /1\/2 个站点正常/);
+  assert.match(buildHeartbeatSubject(config, { okCount: 3, total: 3 }), /无新通告/);
 });

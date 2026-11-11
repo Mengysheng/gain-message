@@ -5,7 +5,7 @@
 按关键词盯着学校官网的通告栏，**只把命中关键词的新通告**汇总成一封邮件发给你。不用学校门户账号、不用浏览器插件、不用服务器——挂在 GitHub Actions 上零成本运行。
 
 ![Node](https://img.shields.io/badge/node-%E2%89%A520-339933)
-![tests](https://img.shields.io/badge/tests-47%20passed-brightgreen)
+![tests](https://img.shields.io/badge/tests-65%20passed-brightgreen)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 ![deps](https://img.shields.io/badge/dependencies-4-brightgreen)
 
@@ -98,12 +98,32 @@ email:
   enabled: true
   to: [you@qq.com]
   smtp: { host: smtp.qq.com, port: 465, secure: true, user: you@qq.com, pass: "" }
+  error_alerts:                       # 告警降噪
+    enabled: true
+    after_consecutive_failures: 3     # 连续失败 3 次才发「抓取失败」
+  heartbeat:                          # 心跳：太久没发信就报一次平安
+    enabled: true
+    min_interval_hours: 20
 ```
 
 - 普通关键词是**子串匹配**，忽略大小写、全角半角，`交换` 能匹配「交换生」。
 - 站点内还可以写自己的 `keywords`，会叠加在全局规则上。
 - 一个学校的多个栏目 = 多个 `sites` 条目；同一栏目分页 = `urls: [第1页, 第2页]`。
 - 密码**不要**写进文件，用 `SMTP_PASS` 环境变量或 GitHub Secrets。
+
+### 什么时候会收到信
+
+| 触发条件 | 邮件 |
+|---|---|
+| 有新通告命中关键词 | 汇总邮件（**只有这一种会带新通告**） |
+| 同一站点连续失败 ≥ `after_consecutive_failures` 次 | 告警邮件，列出失败站点和原因 |
+| 超过 `heartbeat.min_interval_hours` 没发过任何邮件 | 心跳邮件：`N/M 个站点正常` + 各站状态 |
+
+三者不会重复：发过汇总或告警也算报过平安，心跳计时器一起清零。
+偶发一次抓取失败不发信，只写日志和 Actions 的 Job Summary。
+
+心跳**默认开**，它解决的是「收不到信到底代表没消息，还是代表脚本挂了」这个没法区分的问题。
+不想要就把 `email.heartbeat.enabled` 改成 `false`。
 
 完整字段说明见 [docs/selector.md](docs/selector.md)。
 
@@ -130,7 +150,10 @@ node src/cli.js doctor
 ## 部署到 GitHub Actions
 
 推到 GitHub 后加 6 个 Secrets（`SMTP_HOST` / `SMTP_PORT` / `SMTP_SECURE` / `SMTP_USER` / `SMTP_PASS` / `MAIL_TO`），
-在 Actions 页面点一次 **Run workflow** 即可，默认每天 08:00 / 12:00 / 19:00 各跑一次。
+在 Actions 页面点一次 **Run workflow** 即可，之后**每 2 小时跑一次**。
+
+为什么不写死「每天 9/12/15 点」：GitHub 的 schedule 触发经常整体延后几小时（本仓库实测晚 6~8 小时），
+按点卡是做不到的，只能靠频次。多跑不会多推——去重状态记着哪些通告已经发过。
 
 两个容易踩的点：
 
@@ -151,7 +174,8 @@ node src/cli.js doctor
 | `node src/cli.js run` | 正式跑：抓取 → 匹配 → 发信 → 存状态 |
 | `node src/cli.js check-smtp` | 验证 SMTP 能否登录 |
 | `node src/cli.js send-test` | 只发一封测试邮件，不抓取、不改状态 |
-| `npm test` | 47 个单元测试（不需要网络） |
+| `npm test` | 65 个单元测试（不需要网络） |
+| `node tools/run-history.mjs [N]` | 复查最近 N 次定时运行哪个站点成功、哪个超时（读 state 提交历史） |
 
 `run` 常用开关：`--dry-run`（预览）、`--no-email`（只写 Markdown）、`--init`（把当前列表标记为已读）、`--site 名称`（只跑某站）、`--strict`（**所有**站点都抓取失败时退出码 2；部分失败只提示不报红）、`--preview 文件`（导出邮件 HTML）。
 
@@ -159,7 +183,8 @@ node src/cli.js doctor
 
 - **邮件**：一封汇总，命中词高亮、按站点分组、首次订阅附样例；`email.mode: per_item` 可改成一条一封。
 - **Markdown**：本地跑会写到 `out/latest.md` + `out/archive/`，方便贴进 Notion / Obsidian；Actions 里则作为 **Artifacts** 上传（保留 30 天），不提交进仓库，避免和本地冲突。
-- **告警**：站点解析到 0 条时发提醒邮件，避免「看起来没通知」的静默失效。
+- **告警**：站点解析到 0 条、或连续抓取失败到阈值时发提醒邮件，避免「看起来没通知」的静默失效；偶发一次失败只记日志。
+- **心跳**：长时间没有任何邮件时定期报一次平安，把「真的没消息」和「脚本挂了」区分开。
 
 ## 常见问题
 
@@ -174,6 +199,15 @@ node src/cli.js doctor
 
 **邮件收不到？**
 `check-smtp` → 垃圾箱 → `MAIL_TO` → QQ 邮箱用的是授权码而不是登录密码。
+
+**一直报「抓取失败」，是没新通告吗？**
+不是。没新通告只会让脚本安静（或发心跳），不会报失败。失败是抓取层真的没连上：看 `state/state.json` 里的
+`lastError`，`连接超时 [ETIMEDOUT]` 说明是跨境链路的问题，不是选择器。本地 `node src/cli.js test` 能通、
+Actions 里不通，就是这种情况——用 `proxy` 走一层（见 [docs/proxy.md](docs/proxy.md)），或者靠高频次多试几次。
+
+**偶尔收到「N 个站点没抓到」，要不要管？**
+连续失败没到阈值时根本不会发信。真收到了，说明已经连续失败 N 次：先看 Actions 的 Job Summary，
+再排查 `inspect`（页面改版）或 `proxy`（链路不通）。
 
 **会重复推送吗？**
 不会。状态按「站点 + 规范化链接」记录，页面内还按标题去重（同一条通告发在两个栏目只推一次）。
@@ -222,7 +256,7 @@ test/                    单元测试（node:test，无需网络）
 ## 免责声明
 
 - 仅供个人学习和信息获取使用，请遵守目标网站的 robots.txt、服务条款和学校相关规定。
-- 默认抓取频率很低（每天 3 次、每站 1～2 个请求），请不要改成高频轮询。
+- 默认抓取频率很低（每 2 小时一次、每站 1～2 个请求，多跑不会多推），请不要改成高频轮询。
 - 本项目不处理登录态、不绕过验证码、不抓取非公开内容。
 
 ## License

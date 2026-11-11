@@ -2,19 +2,15 @@ name: notice-radar
 
 # GitHub 的 cron 用 UTC。北京时间 = UTC+8
 #
-# 时间选择的依据（2026-11-04 实测）：
-#   11:30 北京  三个站点全部成功
-#   19:59 / 20:48 北京  三个站点全部超时（跨境链路晚间不可用）
-# 所以只在白天跑，晚间的通知留到次日上午一起推。
+# 为什么要跑这么勤：GitHub 的 schedule 触发并不准点（本仓库实测整体晚 6~8 小时），
+# 想「只在白天 9/12/15 点跑」是做不到的——设 01/04/07 UTC，实际会落到北京时间
+# 下午三点、晚上八点、半夜。与其猜时间，不如每两小时跑一次，靠次数换成功率。
 #
-#   01:00 UTC = 09:00 北京
-#   04:00 UTC = 12:00 北京
-#   07:00 UTC = 15:00 北京
+# 多跑不会多推：去重状态记着哪些通告已经发过，重复运行只会刷新 lastSeen。
+# 每 20 小时最多一封心跳，不用担心收件箱被刷屏。
 on:
   schedule:
-    - cron: '0 1 * * *'
-    - cron: '0 4 * * *'
-    - cron: '0 7 * * *'
+    - cron: '0 */2 * * *'
   workflow_dispatch: # 也可以在网页上手动点一下立即运行
     inputs:
       mode:
@@ -96,27 +92,8 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
 
-      # 云端到国内站点的跨境链路偶尔会抖一下（表现为 fetch failed），
-      # 隔两分钟再试通常就好了。已经推送过的条目不会重复推。
-      - name: 失败后等两分钟重试一次
-        if: github.event.inputs.mode != 'test-email' && steps.radar.outcome == 'failure'
-        run: |
-          echo "上一次运行失败，2 分钟后重试（跨境链路抖动通常能自愈）"
-          {
-            echo "### ⏳ 第一次运行失败，2 分钟后自动重试"
-            echo ""
-            echo "如果重试仍失败，看下面这一次的 Job Summary。"
-          } >> "$GITHUB_STEP_SUMMARY"
-          sleep 120
-          node src/cli.js run --strict
-        env:
-          SMTP_HOST: ${{ secrets.SMTP_HOST }}
-          SMTP_PORT: ${{ secrets.SMTP_PORT }}
-          SMTP_SECURE: ${{ secrets.SMTP_SECURE }}
-          SMTP_USER: ${{ secrets.SMTP_USER }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-          MAIL_TO: ${{ secrets.MAIL_TO }}
-
+      # 失败重试现在在抓取层内部做（10s 超时 × 5 次尝试 + 指数退避），
+      # 原来那个「等两分钟再跑一遍」的步骤在实测中从未生效，删掉。
       # 汇总文件放 Artifacts，不提交进仓库：避免和本地冲突，也避免仓库膨胀
       - name: 上传 Markdown 汇总
         if: always()

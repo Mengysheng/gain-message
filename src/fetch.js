@@ -1,5 +1,5 @@
 import iconv from 'iconv-lite';
-import { sleep } from './util.js';
+import { logError, sleep } from './util.js';
 
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
@@ -102,6 +102,15 @@ export function isCookieChallenge(status, html) {
 }
 
 /**
+ * 重试间隔：1.5s / 6s / 13.5s / 24s 指数退避，再加 ±30% 随机抖动。
+ * 抖动是必要的：三个站点如果按同一个节奏重试，会一起撞进同一段坏链路。
+ */
+export function retryDelay(attempt, base = 1500) {
+  const raw = base * (attempt + 1) ** 2;
+  return Math.round(raw * (0.7 + Math.random() * 0.6));
+}
+
+/**
  * 抓页面，带重试、超时、编码识别、cookie 挑战处理。
  * 走代理时 finalUrl 仍然返回原始地址，保证相对链接能正确补全。
  * @returns {Promise<{html:string,status:number,finalUrl:string,charset:string,fetchedVia:string}>}
@@ -172,7 +181,11 @@ export async function fetchPage(url, options = {}) {
       };
     } catch (error) {
       lastError = error;
-      if (attempt < retries) await sleep(1500 * (attempt + 1) ** 2);
+      if (process.env.RADAR_DEBUG) {
+        logError(`第 ${attempt + 1} 次请求失败 ${url}：${describeFetchError(error)}`);
+      }
+      // 退避带随机抖动：多个站点同时重试时不要踩同一个节奏，否则一起撞墙
+      if (attempt < retries) await sleep(retryDelay(attempt));
     }
   }
   throw new Error(`抓取失败 ${url}：${describeFetchError(lastError)}`);

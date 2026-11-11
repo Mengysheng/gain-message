@@ -8,18 +8,23 @@ import { parseList, parseDetail } from './parse.js';
 import { compileRules, matchItem } from './match.js';
 import {
   emptyState,
+  failStreak,
   isFirstRun,
   isSeen,
   loadState,
   markSeen,
   pruneState,
+  recordSiteFail,
+  recordSiteOk,
   saveState,
-  touchSite,
 } from './store.js';
 import {
+  buildHeartbeatSubject,
   buildSubject,
   renderDigest,
   renderDigestText,
+  renderHeartbeat,
+  renderHeartbeatText,
   sendMail,
   verifySmtp,
 } from './mail.js';
@@ -492,6 +497,62 @@ async function cmdSendTest(args) {
   log('收到就说明 SMTP、收件地址、邮件排版都正常；没收到先查垃圾箱。');
 }
 
+/** 心跳间隔（小时）：多久没发过信就报一次平安 */
+export function heartbeatIntervalHours(config) {
+  return Math.max(1, Number(config.email?.heartbeat?.min_interval_hours ?? 20));
+}
+
+/**
+ * 决定这一轮要不要发信、发哪一种。
+ *   有新命中 / 首次样例 → 汇总邮件
+ *   站点连续失败到阈值   → 告警邮件（偶发一次不发，链路抖动不值得吵）
+ *   静默太久            → 心跳邮件（证明脚本还活着）
+ */
+export function decideMail({ config, state, errors = [], totalHits = 0, totalSamples = 0, now = new Date() }) {
+  const email = config.email || {};
+  const alertCfg = email.error_alerts || {};
+  const alertsEnabled = alertCfg.enabled !== false;
+  const threshold = Math.max(1, Number(alertCfg.after_consecutive_failures ?? 3));
+
+  const alerting = alertsEnabled
+    ? errors.filter((error) => Number(error.failStreak ?? state.sites?.[error.name]?.failStreak ?? 1) >= threshold)
+    : errors.slice();
+  const suppressed = errors.filter((error) => !alerting.includes(error));
+
+  const hasDigest = totalHits > 0 || totalSamples > 0;
+  const errorMail = alerting.length > 0 && email.send_on_error !== false;
+
+  const heartbeatCfg = email.heartbeat || {};
+  const interval = heartbeatIntervalHours(config) * 3600e3;
+  const lastHeartbeat = state.meta?.lastHeartbeatAt ? new Date(state.meta.lastHeartbeatAt).getTime() : 0;
+  const heartbeatDue = heartbeatCfg.enabled !== false && now.getTime() - lastHeartbeat >= interval;
+
+  if (hasDigest || errorMail) {
+    return { send: true, kind: 'digest', alerting, suppressed, heartbeatDue, threshold };
+  }
+  if (heartbeatDue) {
+    return { send: true, kind: 'heartbeat', alerting, suppressed, heartbeatDue, threshold };
+  }
+  return { send: false, kind: null, alerting, suppressed, heartbeatDue, threshold };
+}
+
+/** 心跳邮件里每个站点的状态行 */
+export function buildSiteRows(state, sites, errors = [], timezone = 'Asia/Shanghai') {
+  return sites.map((site) => {
+    const record = state.sites?.[site.name] || {};
+    const error = errors.find((item) => item.name === site.name);
+    const url = Array.isArray(site.urls) && site.urls.length ? site.urls[0] : site.url;
+    return {
+      name: site.name,
+      url,
+      ok: !error,
+      error: error ? error.message : null,
+      lastOk: record.lastOk ? formatDateTime(new Date(record.lastOk), timezone) : null,
+      failStreak: Number(record.failStreak || 0),
+    };
+  });
+}
+
 async function cmdRun(args) {
   const config = requireConfig(args);
   const state = loadState(config.state_file);
@@ -509,49 +570,60 @@ async function cmdRun(args) {
   const errors = [];
   const checked = [];
 
-  for (const site of sites) {
+  // 站点之间并行：跨境链路一次握手超时就要十几秒，串行会把整轮拖到五分钟以上
+  const siteConcurrency = Math.max(1, Number(config.request?.site_concurrency ?? 3));
+  const outcomes = await mapLimit(sites, siteConcurrency, async (site) => {
     try {
       const result = await prepareSite(config, site, state);
-      checked.push({ site, result });
-
-      const items = [...result.matches];
-      if (result.samples.length) items.push(...result.samples);
-      items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-
-      if (items.length) {
-        groups.push({
-          name: site.name,
-          url: result.pageUrl,
-          items,
-          firstRun: result.firstRun,
-        });
-      }
-
       if (!dryRun) {
         for (const item of result.candidates) markSeen(state, site.name, item);
-        touchSite(state, site.name, {
+        recordSiteOk(state, site.name, {
           lastRun: now.toISOString(),
           lastOk: now.toISOString(),
-          lastError: null,
           lastCount: result.candidates.length,
         });
       }
-
-      log(
-        `${site.name}：解析 ${result.candidates.length} 条，新增 ${result.fresh.length} 条，命中 ${result.matches.length} 条${
-          result.samples.length ? `，首次样例 ${result.samples.length} 条` : ''
-        }`,
-      );
+      return { site, result, error: null };
     } catch (error) {
-      errors.push({ name: site.name, message: error.message });
-      if (!dryRun) {
-        touchSite(state, site.name, {
-          lastRun: now.toISOString(),
-          lastError: error.message,
-        });
-      }
-      logError(`${site.name} 失败：${error.message}`);
+      const streak = dryRun ? null : recordSiteFail(state, site.name, error.message, { lastRun: now.toISOString() });
+      return { site, result: null, error, streak };
     }
+  });
+
+  // mapLimit 按下标返回，顺序和 config 里的 sites 一致
+  for (const outcome of outcomes) {
+    const { site, result, error } = outcome;
+
+    if (error) {
+      errors.push({
+        name: site.name,
+        message: error.message,
+        failStreak: outcome.streak ?? failStreak(state, site.name),
+      });
+      logError(`${site.name} 失败：${error.message}`);
+      continue;
+    }
+
+    checked.push({ site, result });
+
+    const items = [...result.matches];
+    if (result.samples.length) items.push(...result.samples);
+    items.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+
+    if (items.length) {
+      groups.push({
+        name: site.name,
+        url: result.pageUrl,
+        items,
+        firstRun: result.firstRun,
+      });
+    }
+
+    log(
+      `${site.name}：解析 ${result.candidates.length} 条，新增 ${result.fresh.length} 条，命中 ${result.matches.length} 条${
+        result.samples.length ? `，首次样例 ${result.samples.length} 条` : ''
+      }`,
+    );
   }
 
   const total = groups.reduce((sum, group) => sum + group.items.length, 0);
@@ -591,14 +663,22 @@ async function cmdRun(args) {
     log(`邮件预览已写入：${target}`);
   }
 
-  const shouldEmail =
-    config.email?.enabled &&
-    !noEmail &&
-    !dryRun &&
-    (totalHits > 0 || totalSamples > 0 || (errors.length && config.email.send_on_error !== false));
+  const plan = decideMail({ config, state, errors, totalHits, totalSamples, now });
+  const shouldEmail = config.email?.enabled && !noEmail && !dryRun && plan.send;
+  const heartbeatInterval = heartbeatIntervalHours(config);
 
   if (shouldEmail) {
-    if (config.email.mode === 'per_item' && totalHits > 0) {
+    if (plan.kind === 'heartbeat') {
+      const rows = buildSiteRows(state, sites, errors, config.timezone);
+      const html = renderHeartbeat({ rows, generatedAt, timezone: config.timezone, intervalHours: heartbeatInterval });
+      const text = renderHeartbeatText({ rows, generatedAt, intervalHours: heartbeatInterval });
+      const subject = buildHeartbeatSubject(config, {
+        okCount: rows.filter((row) => row.ok).length,
+        total: rows.length,
+      });
+      await sendMail(config, { subject, html, text });
+      log(`心跳邮件已发送：${subject}`);
+    } else if (config.email.mode === 'per_item' && totalHits > 0) {
       for (const group of groups) {
         for (const item of group.items.filter((i) => !i.isSample)) {
           const html = renderDigest({
@@ -633,8 +713,24 @@ async function cmdRun(args) {
       await sendMail(config, { subject, html, text });
       log(`邮件已发送：${subject}`);
     }
-  } else if (total > 0 || errors.length) {
-    log(`跳过发送（${dryRun ? 'dry-run' : noEmail ? '--no-email' : 'email 未启用'}）`);
+
+    // 发过信就算报过平安，心跳计时器一起清零，避免同一天收两封
+    if (!dryRun) {
+      state.meta = state.meta || {};
+      state.meta.lastMailAt = now.toISOString();
+      if (plan.heartbeatDue) state.meta.lastHeartbeatAt = now.toISOString();
+    }
+  } else {
+    if (plan.kind === 'heartbeat') {
+      log(`跳过发送（${dryRun ? 'dry-run' : noEmail ? '--no-email' : 'email 未启用'}）`);
+    } else if (total > 0 || errors.length) {
+      log(`跳过发送（${dryRun ? 'dry-run' : noEmail ? '--no-email' : 'email 未启用'}）`);
+    }
+    if (plan.suppressed.length) {
+      logError(
+        `${plan.suppressed.length} 个站点失败但没发告警（连续失败未到 ${plan.threshold} 次，链路抖动不值得吵你）`,
+      );
+    }
   }
 
   if (!dryRun) {
@@ -660,9 +756,15 @@ async function cmdRun(args) {
       [
         allFailed ? '## ❌ 所有站点都抓取失败了' : `## ⚠️ ${errors.length} 个站点这次没抓到（其他站点正常）`,
         '',
-        '| 站点 | 原因 |',
-        '|---|---|',
-        ...errors.map((error) => `| ${escapeCell(error.name)} | ${escapeCell(error.message)} |`),
+        '| 站点 | 连续失败 | 原因 |',
+        '|---|---|---|',
+        ...errors.map(
+          (error) => `| ${escapeCell(error.name)} | ${escapeCell(error.failStreak ?? 1)} | ${escapeCell(error.message)} |`,
+        ),
+        '',
+        plan.suppressed.length
+          ? `其中 ${plan.suppressed.length} 个还没到告警阈值（连续 ${plan.threshold} 次），这次没发邮件。`
+          : '已经超过告警阈值，告警邮件已发出。',
         '',
         allFailed
           ? '多半是网络问题或页面改版。偶发可等下次；持续失败就跑 `node src/cli.js inspect <url>` 重新生成选择器。'
