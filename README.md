@@ -29,6 +29,8 @@
 
 > 想彻底搞懂它怎么实现的、拿它监控自己学校要改哪些地方、有哪些坑：
 > 看 **[docs/architecture.md](docs/architecture.md)**（项目全解，含架构、模块、设计决策、改动清单、排障表）。
+>
+> 第一次用、想把配置讲给别人听：看 **[docs/tutorial.md](docs/tutorial.md)**（使用教程，含「改抓取时间」专章）。
 
 ## 它解决什么问题
 
