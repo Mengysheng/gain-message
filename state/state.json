@@ -2,25 +2,25 @@
   "version": 1,
   "sites": {
     "川大教务处·通知公告": {
-      "lastRun": "2026-11-14T12:54:52.250Z",
+      "lastRun": "2026-11-14T13:31:37.569Z",
       "lastOk": "2026-11-14T12:54:52.250Z",
-      "lastError": null,
+      "lastError": "抓取失败 https://jwc.scu.edu.cn/ssjgy.jsp?wbtreeid=1001：连接超时 [ETIMEDOUT]",
       "lastCount": 14,
-      "failStreak": 0
+      "failStreak": 1
     },
     "川大就业网·实习岗位": {
-      "lastRun": "2026-11-14T12:54:52.250Z",
-      "lastError": null,
+      "lastRun": "2026-11-14T13:31:37.569Z",
+      "lastError": "抓取失败 https://jy.scu.edu.cn/index/index/employjob.html?type=2：连接超时 [ETIMEDOUT]",
       "lastOk": "2026-11-14T12:54:52.250Z",
       "lastCount": 20,
-      "failStreak": 0
+      "failStreak": 1
     },
     "川大就业网·通知公告": {
-      "lastRun": "2026-11-14T12:54:52.250Z",
-      "lastError": null,
+      "lastRun": "2026-11-14T13:31:37.569Z",
+      "lastError": "抓取失败 https://jy.scu.edu.cn/index/index/newslist.html?data=MQ：连接超时 [ETIMEDOUT]",
       "lastOk": "2026-11-14T12:54:52.250Z",
       "lastCount": 17,
-      "failStreak": 0
+      "failStreak": 1
     }
   },
   "items": {
