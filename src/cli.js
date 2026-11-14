@@ -51,7 +51,6 @@ run 的选项：
   --site <名称>     只跑指定站点（可多次）
   --strict         有站点抓取失败时以退出码 2 结束（让 GitHub Actions 变红）
   --preview <文件>  把邮件渲染成 HTML 存下来，方便在浏览器看效果
-  --verbose        打印每条条目的匹配详情
 
 通用选项：
   --config <路径>   配置文件，默认 config.yaml

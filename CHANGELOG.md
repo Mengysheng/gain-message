@@ -8,6 +8,8 @@
 
 ### 新增
 
+- `docs/architecture.md`：项目全解。架构与数据流、每个模块的实现要点、8 个关键设计决策与实测数据、
+  「别人要用改哪里」清单、15 条注意事项、排障表、按需求定位文件的导读
 - `scripts/run-local.ps1`：本地跑一轮。加载 `.env` → 等网络就绪（开机后 Wi-Fi 没连上不会白跑）→
   跑 `node src/cli.js run` → 写 `logs\radar-YYYY-MM-DD.log`；用 `logs\run.lock` 防重复启动，日志保留 30 天
 - `scripts/install-boot-task.ps1`：注册/卸载计划任务。默认**登录后延迟 60 秒跑一次 + 每 2 小时一次**，
